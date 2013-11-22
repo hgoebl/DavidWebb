@@ -65,38 +65,38 @@ of a series of novels by Robert Ludlum and subsequent film adaptations
 # Usage
 
 ```java
-    // create the client (one-time, can be used from different threads)
-    Webb webb = Webb.create();
-    webb.setBaseUri(SyncPreferences.REST_ENDPOINT);
-    webb.setDefaultHeader(Webb.HDR_USER_AGENT, Const.UA);
+// create the client (one-time, can be used from different threads)
+Webb webb = Webb.create();
+webb.setBaseUri(SyncPreferences.REST_ENDPOINT);
+webb.setDefaultHeader(Webb.HDR_USER_AGENT, Const.UA);
 
-    // later we authenticate
-    Response<JSONObject> response = webb
-            .post("/session")
-            .param("authentication", createAuthentication(syncPreferences))
-            .param("deviceId", syncPreferences.getDeviceId())
-            .ensureSuccess()
-            .asJsonObject();
+// later we authenticate
+Response<JSONObject> response = webb
+        .post("/session")
+        .param("authentication", createAuthentication(syncPreferences))
+        .param("deviceId", syncPreferences.getDeviceId())
+        .ensureSuccess()
+        .asJsonObject();
 
-    JSONObject apiResult = response.getBody();
+JSONObject apiResult = response.getBody();
 
-    AccessToken accessToken = new AccessToken();
-    accessToken.token = apiResult.getString("token");
-    accessToken.validUntil = apiResult.getLong("validUntil");
+AccessToken accessToken = new AccessToken();
+accessToken.token = apiResult.getString("token");
+accessToken.validUntil = apiResult.getLong("validUntil");
 
-    webb.setDefaultHeader(HDR_ACCESS_TOKEN, accessToken.token);
+webb.setDefaultHeader(HDR_ACCESS_TOKEN, accessToken.token);
 
-    JSONObject sync = webb.post("/startSync")
-            .param("lastSync", syncPrefs.getLastSync())
-            .ensureSuccess()
-            .asJsonObject()
-            .getBody();
+JSONObject sync = webb.post("/startSync")
+        .param("lastSync", syncPrefs.getLastSync())
+        .ensureSuccess()
+        .asJsonObject()
+        .getBody();
 
-    // ... etc. etc.
+// ... etc. etc.
 
-    // releaseAccessToken
-    webb.delete("/session").asVoid();
-    accessToken = null;
+// releaseAccessToken
+webb.delete("/session").asVoid();
+accessToken = null;
 ```
 
 **TODO** add more examples - for now just have a look in the JUnit TestCase (src/test/java/...)
@@ -129,7 +129,6 @@ If you don't want to do this, just skip the tests in Maven build `-DskipTests`
 
 # TODO
 
-  * Support HTTPS (coming soon!)
   * Write example code for README.md
   * Write JavaDoc
   * Generate JavaDoc and publish on gh-pages

@@ -75,6 +75,10 @@ public class Response<T> {
         return connection.getHeaderFieldInt(field, defaultValue);
     }
 
+    public HttpURLConnection getConnection() {
+        return connection;
+    }
+
     public void ensureSuccess() {
         if (!isSuccess()) {
             throw new WebbException("Request failed: " + statusCode + " " + responseMessage);

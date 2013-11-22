@@ -4,6 +4,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +44,8 @@ public class Webb {
     boolean followRedirects = false;
     String baseUri;
     Map<String, Object> defaultHeaders;
+    SSLSocketFactory sslSocketFactory;
+    HostnameVerifier hostnameVerifier;
 
     public static Webb create() {
         return new Webb();
@@ -60,6 +65,14 @@ public class Webb {
 
     public static void setJsonIndentFactor(int indentFactor) {
         Webb.jsonIndentFactor = indentFactor;
+    }
+
+    public void setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
+        this.sslSocketFactory = sslSocketFactory;
+    }
+
+    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+        this.hostnameVerifier = hostnameVerifier;
     }
 
     public void setBaseUri(String baseUri) {
@@ -112,6 +125,8 @@ public class Webb {
             }
             URL apiUrl = new URL(uri);
             connection = (HttpURLConnection) apiUrl.openConnection();
+
+            prepareSslConnection(connection);
             connection.setRequestMethod(request.method.name());
             if (request.method != Request.Method.DELETE) {
                 connection.setDoOutput(true);
@@ -239,6 +254,18 @@ public class Webb {
             connection.setFixedLengthStreamingMode(requestBody.length);
         }
         return requestBody;
+    }
+
+    private void prepareSslConnection(HttpURLConnection connection) {
+        if ((hostnameVerifier != null || sslSocketFactory != null) && connection instanceof HttpsURLConnection) {
+            HttpsURLConnection sslConnection = (HttpsURLConnection) connection;
+            if (hostnameVerifier != null) {
+                sslConnection.setHostnameVerifier(hostnameVerifier);
+            }
+            if (sslSocketFactory != null) {
+                sslConnection.setSSLSocketFactory(sslSocketFactory);
+            }
+        }
     }
 
 }

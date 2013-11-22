@@ -4,6 +4,10 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.net.ssl.*;
+
+import java.security.cert.X509Certificate;
+
 import static org.junit.Assert.*;
 
 public class TestWebb {
@@ -121,4 +125,60 @@ public class TestWebb {
         assertEquals(200, response.getStatusCode());
     }
 
+    @Test public void httpsValidCertificate() throws Exception {
+        webb.setBaseUri(null);
+
+        Response<JSONObject> response = webb
+                .get("https://www.googleapis.com/oauth2/v1/certs")
+                .ensureSuccess()
+                .asJsonObject();
+
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test public void httpsInvalidCertificate() throws Exception {
+        webb.setBaseUri(null);
+
+        try {
+            webb.get("https://tv.eurosport.com/").ensureSuccess().asString();
+            fail();
+        } catch (WebbException e) {
+            assertEquals(SSLHandshakeException.class, e.getCause().getClass());
+        }
+    }
+
+    @Test public void httpsHostnameIgnore() throws Exception {
+        webb.setBaseUri(null);
+        webb.setHostnameVerifier(new TrustingHostnameVerifier());
+
+        // www.wellcrafted.de has same IP as www.goebl.com, but certificate is for www.goebl.com
+        Response<Void> response = webb.get("https://www.wellcrafted.de/").asVoid();
+        assertTrue(response.isSuccess());
+    }
+
+    @Test public void httpsInvalidCertificateAndHostnameIgnore() throws Exception {
+        webb.setBaseUri(null);
+
+        TrustManager[] trustAllCerts = new TrustManager[] { new AlwaysTrustManager() };
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+        webb.setSSLSocketFactory(sslContext.getSocketFactory());
+        webb.setHostnameVerifier(new TrustingHostnameVerifier());
+
+        Response<Void> response = webb.get("https://tv.eurosport.com/").asVoid();
+        assertTrue(response.isSuccess() || response.getStatusCode() == 301);
+    }
+
+    private static class TrustingHostnameVerifier implements HostnameVerifier {
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    }
+
+    private static class AlwaysTrustManager implements X509TrustManager {
+        public void checkClientTrusted(X509Certificate[] arg0, String arg1) { }
+        public void checkServerTrusted(X509Certificate[] arg0, String arg1) { }
+        public X509Certificate[] getAcceptedIssuers() { return null; }
+    }
 }
