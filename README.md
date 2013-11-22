@@ -27,8 +27,10 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
 
 ## Solved
 
-**DavidWebb** is a small wrapper around `HttpUrlConnection`. It supports most HTTP communication cases when
-you talk to REST services and your data is JSON. It is very lightweight (~12 KB jar) and super-easy to use.
+**DavidWebb** is a small wrapper around
+[HttpUrlConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
+It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
+lightweight (~12 KB jar) and super-easy to use.
 
 ### Features ###
 
@@ -39,6 +41,8 @@ you talk to REST services and your data is JSON. It is very lightweight (~12 KB 
   * org.json support (JSONObject, JSONArray) as payload in both directions
   * wraps all Exceptions in a WebbException (a RuntimeException)
   * automatically sets many boiler-plate HTTP headers (like 'Accept', 'Content-Type', 'Content-Length')
+  * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
+  * pass-through to "real" connection for special cases (e.g. get client certificate)
 
 ## Not for you?
 
@@ -48,6 +52,11 @@ If **DavidWebb** is too lightweight and you're missing features, you can have a 
   * [RoboSpice](https://github.com/octo-online/robospice)
   * [android-rest-client](https://github.com/darko1002001/android-rest-client)
   * [unirest](http://unirest.io/)
+  * [Restlet Framework](http://restlet.org/)
+  * [Volley](https://android.googlesource.com/platform/frameworks/volley) and
+    [Volley Example](http://www.technotalkative.com/android-volley-library-example/)
+  * [DataDroid](http://datadroid.foxykeep.com/) - an Android library for Data Management
+  * [More Alternatives (on RoboSpice)](https://github.com/octo-online/robospice#alternatives-to-robospice-)
   * (tell me if I missed your award-winning REST-client library!)
 
 ## The Name!?
@@ -99,7 +108,7 @@ webb.delete("/session").asVoid();
 accessToken = null;
 ```
 
-**TODO** add more examples - for now just have a look in the JUnit TestCase (src/test/java/...)
+If you want to see more examples, just have a look at the JUnit TestCase (src/test/java/...).
 
 ## Special Case Android < Froyo
 
@@ -129,7 +138,6 @@ If you don't want to do this, just skip the tests in Maven build `-DskipTests`
 
 # TODO
 
-  * Write example code for README.md
   * Write JavaDoc
   * Generate JavaDoc and publish on gh-pages
   * Extend Tests
