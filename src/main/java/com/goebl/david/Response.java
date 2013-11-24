@@ -35,22 +35,42 @@ public class Response<T> {
         return statusCode;
     }
 
+    /**
+     * The first line returned by the web-server, like "HTTP/1.1 200 OK".
+     * @return first header
+     */
     public String getStatusLine() {
         return connection.getHeaderField(0);
     }
 
+    /**
+     * Was the request successful (returning a 2xx status code)?
+     * @return <code>true</code> when status code is between 200 and 299, else <code>false</code>
+     */
     public boolean isSuccess() {
         return (statusCode / 100) == 2; // 200, 201, 204, ...
     }
 
+    /**
+     * Returns the text explaining the status code.
+     * @return e.g. "Moved Permanently", "Created", ...
+     */
     public String getResponseMessage() {
         return responseMessage;
     }
 
+    /**
+     * Returns the MIME-type of the response body.
+     * @return e.g. "application/json", "text/plain", ...
+     */
     public String getContentType() {
         return connection.getContentType();
     }
 
+    /**
+     * Returns the date when the request was created (server-time).
+     * @return the parsed "Date" header or <code>null</code> if this header was not set.
+     */
     public long getDate() {
         return connection.getDate();
     }

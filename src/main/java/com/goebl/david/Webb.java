@@ -121,7 +121,7 @@ public class Webb {
                     !uri.contains("?") &&
                     request.params != null &&
                     !request.params.isEmpty()) {
-                uri += "?" + Utils.queryString(request.params);
+                uri += "?" + WebbUtils.queryString(request.params);
             }
             URL apiUrl = new URL(uri);
             connection = (HttpURLConnection) apiUrl.openConnection();
@@ -144,11 +144,11 @@ public class Webb {
             }
 
             // TODO create and obey an overwrite rule for headers
-            Utils.addRequestProperties(connection, globalHeaders);
-            Utils.addRequestProperties(connection, defaultHeaders);
-            Utils.addRequestProperties(connection, request.headers);
+            WebbUtils.addRequestProperties(connection, globalHeaders);
+            WebbUtils.addRequestProperties(connection, defaultHeaders);
+            WebbUtils.addRequestProperties(connection, request.headers);
             if (clazz == JSONObject.class || clazz == JSONArray.class) {
-                Utils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);
+                WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);
             }
 
             byte[] requestBody = null;
@@ -169,7 +169,7 @@ public class Webb {
 
             // get the response body (if any)
             is = connection.getInputStream();
-            byte[] responseBody = Utils.readBytes(is);
+            byte[] responseBody = WebbUtils.readBytes(is);
 
             response.connection = connection;
             response.statusCode = connection.getResponseCode();
@@ -218,9 +218,9 @@ public class Webb {
         } else if (clazz == BYTE_ARRAY_CLASS) {
             response.setBody(responseBody);
         } else if (clazz == JSONObject.class) {
-            response.setBody(Utils.toJsonObject(responseBody));
+            response.setBody(WebbUtils.toJsonObject(responseBody));
         } else if (clazz == JSONArray.class) {
-            response.setBody(Utils.toJsonArray(responseBody));
+            response.setBody(WebbUtils.toJsonArray(responseBody));
         }
     }
 
@@ -229,21 +229,21 @@ public class Webb {
         String bodyStr = null;
 
         if (request.params != null) {
-            Utils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_FORM);
-            bodyStr = Utils.queryString(request.params);
+            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_FORM);
+            bodyStr = WebbUtils.queryString(request.params);
         } else if (request.payload == null) {
             requestBody = null;
         } else if (request.payload instanceof JSONObject) {
-            Utils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
+            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
             bodyStr = ((JSONObject)request.payload).toString(jsonIndentFactor);
         } else if (request.payload instanceof JSONArray) {
-            Utils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
+            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
             bodyStr = ((JSONArray)request.payload).toString(jsonIndentFactor);
         } else if (request.payload instanceof byte[]) {
-            Utils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_BINARY);
+            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_BINARY);
             requestBody = (byte[]) request.payload;
         } else {
-            Utils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, TEXT_PLAIN);
+            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, TEXT_PLAIN);
             bodyStr = request.payload.toString();
         }
         if (bodyStr != null) {

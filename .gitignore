@@ -1,4 +1,5 @@
 *.class
+*.log
 
 target
 node_modules

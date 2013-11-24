@@ -7,8 +7,15 @@ import org.junit.Test;
 import javax.net.ssl.*;
 
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import static org.junit.Assert.*;
+
+// TODO test read-timeout
+// TODO test redirect (follow redirect true/false)
+// TODO express res.location and res.redirect
+// TODO express res.charset = "value" => Content-Type: text/html; charset=value
 
 public class TestWebb {
     private static final String SIMPLE_ASCII = "Hello/World & Co.?";
@@ -113,16 +120,101 @@ public class TestWebb {
         assertEquals("No Content", response.getResponseMessage());
     }
 
+    @Test public void parameterTypes() throws Exception {
+        Response<String> response = webb
+                .get("/parameter-types")
+                .param("string", SIMPLE_ASCII)
+                .param("number", 4711)
+                .param("null", null)
+                .param("empty", "")
+                .asString();
+
+        assertEquals(204, response.getStatusCode());
+    }
+
     @Test public void headersIn() throws Exception {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        cal.set(2013, Calendar.NOVEMBER, 24, 23, 59, 33);
 
         Response<Void> response = webb
                 .get("/headers/in")
                 .header("x-test-string", COMPLEX_UTF8)
                 .header("x-test-int", 4711)
+                .header("x-test-calendar", cal)
+                .header("x-test-date", cal.getTime())
                 .param(Webb.HDR_USER_AGENT, Webb.DEFAULT_USER_AGENT)
                 .asVoid();
 
         assertEquals(200, response.getStatusCode());
+    }
+
+    @Test public void headersOut() throws Exception {
+
+        Response<Void> response = webb
+                .get("/headers/out")
+                .asVoid();
+
+        assertEquals(200, response.getStatusCode());
+        assertEquals(4711, response.getHeaderFieldInt("x-test-int", 0));
+        long serverTime = response.getHeaderFieldDate("x-test-date", 0L);
+        assertTrue(Math.abs(serverTime - System.currentTimeMillis()) < 1000);
+
+        serverTime = response.getDate();
+        assertTrue(Math.abs(serverTime - System.currentTimeMillis()) < 1000);
+
+        assertEquals(SIMPLE_ASCII, response.getHeaderField("x-test-string"));
+    }
+
+    @Test public void headerExpires() throws Exception {
+
+        long offset = 3600 * 1000;
+        Response<Void> response = webb
+                .get("/headers/expires")
+                .param("offset", offset)
+                .asVoid();
+
+        assertEquals(200, response.getStatusCode());
+        long expiresRaw = response.getHeaderFieldDate("Expires", 0L);
+        long expires = response.getExpiration();
+
+        assertTrue(Math.abs(expires - offset - System.currentTimeMillis()) < 10000); // <10 seconds time drift is ok
+        assertEquals(expiresRaw, expires);
+    }
+
+    @Test public void ifModifiedSince() throws Exception {
+
+        long lastModified = System.currentTimeMillis() - 10000; // resource was modified 10 seconds ago
+
+        // we ask if it was modified earlier than 100 seconds ago => yes!
+        Response<Void> response = webb
+                .get("/headers/if-modified-since")
+                .ifModifiedSince(lastModified - 100000)
+                .param("lastModified", lastModified)
+                .asVoid();
+
+        assertEquals(200, response.getStatusCode());
+
+        // we ask if it was modified earlier than 5 seconds ago => no!
+        response = webb
+                .get("/headers/if-modified-since")
+                .ifModifiedSince(lastModified + 5000)
+                .param("lastModified", lastModified)
+                .asVoid();
+
+        assertEquals(304, response.getStatusCode());
+    }
+
+    @Test public void lastModified() throws Exception {
+
+        long lastModified = (System.currentTimeMillis() / 1000) * 1000L;
+
+        Response<Void> response = webb
+                .get("/headers/last-modified")
+                .param("lastModified", lastModified)
+                .asVoid();
+
+        assertEquals(200, response.getStatusCode());
+        assertEquals(lastModified, response.getLastModified());
     }
 
     @Test public void httpsValidCertificate() throws Exception {

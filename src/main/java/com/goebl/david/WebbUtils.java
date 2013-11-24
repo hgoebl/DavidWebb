@@ -19,16 +19,17 @@ import java.util.*;
  *
  * @author hgoebl
  */
-class Utils {
+public class WebbUtils {
     public static String queryString(Map<String, Object> values) {
         StringBuilder sbuf = new StringBuilder();
         String separator = "";
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
+            String value = entry.getValue() == null ? "" : String.valueOf(entry.getValue());
             sbuf.append(separator);
             sbuf.append(entry.getKey());
             sbuf.append('=');
-            sbuf.append(urlEncode(String.valueOf(entry.getValue())));
+            sbuf.append(urlEncode(value));
             separator = "&";
         }
 

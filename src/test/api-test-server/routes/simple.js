@@ -1,5 +1,7 @@
 "use strict";
 
+var SIMPLE_ASCII = 'Hello/World & Co.?';
+
 module.exports = function registerRoutes(app) {
 
     app.get('/simple.txt', returnFormAsText);
@@ -24,5 +26,14 @@ module.exports = function registerRoutes(app) {
 
     app.del('/simple', function (req, res) {
         res.status(204).end();
+    });
+
+    app.get('/parameter-types', function (req, res) {
+        var ok = req.param('string') === SIMPLE_ASCII &&
+            req.param('number') === '4711' &&
+            req.param('null') === '' &&
+            req.param('empty') === '';
+
+        res.send(ok ? 204 : 500);
     });
 };
