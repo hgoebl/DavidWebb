@@ -128,19 +128,12 @@ public class Webb {
 
             prepareSslConnection(connection);
             connection.setRequestMethod(request.method.name());
-            if (request.method != Request.Method.DELETE) {
-                connection.setDoOutput(true);
-            }
             connection.setInstanceFollowRedirects(followRedirects);
             connection.setUseCaches(request.useCaches);
             connection.setConnectTimeout(request.connectTimeout != null ? request.connectTimeout : connectTimeout);
             connection.setReadTimeout(request.readTimeout != null ? request.readTimeout : readTimeout);
             if (request.ifModifiedSince != null) {
                 connection.setIfModifiedSince(request.ifModifiedSince);
-            }
-
-            if (request.method != Request.Method.GET && request.payload != null) {
-                connection.setDoInput(true);
             }
 
             // TODO create and obey an overwrite rule for headers
@@ -152,8 +145,11 @@ public class Webb {
             }
 
             byte[] requestBody = null;
-            if (request.method != Request.Method.GET) {
+            if (request.method != Request.Method.GET && request.method != Request.Method.DELETE) {
                 requestBody = getPayloadAsBytesAndSetContentType(connection, request);
+                if (requestBody != null) {
+                    connection.setDoOutput(true);
+                }
             }
 
             connection.connect();
