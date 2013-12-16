@@ -101,7 +101,7 @@ public class WebbUtils {
     }
 
     public static void addRequestProperties(HttpURLConnection connection, String name, Object value) {
-        if (name == null || name.isEmpty() || value == null) {
+        if (name == null || name.length() == 0 || value == null) {
             throw new IllegalArgumentException("name and value must not be empty");
         }
 
