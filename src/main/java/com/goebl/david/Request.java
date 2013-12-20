@@ -100,7 +100,7 @@ public class Request {
     }
 
     public Response<byte[]> asBytes() {
-        Response<byte[]> response = (Response<byte[]>) webb.execute(this, Webb.BYTE_ARRAY_CLASS);
+        Response<byte[]> response = (Response<byte[]>) webb.execute(this, Const.BYTE_ARRAY_CLASS);
         return response;
     }
 

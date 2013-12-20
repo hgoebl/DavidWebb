@@ -165,9 +165,6 @@ And if you don't want to build the library, just take the jar from the `dist` fo
 
 # TODO
 
-## Bugfix
-  * overwrite / effective headers (merge headers)
-
 ## Features
   * unprefixJson <http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx>
   * decorator beforeSend - provide hooks to manipulate request before send

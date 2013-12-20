@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -21,21 +22,18 @@ import java.util.Map;
  * @author hgoebl
  */
 public class Webb {
-    public static final String DEFAULT_USER_AGENT = "com.goebl.david.Webb/1.0";
-    public static final String APP_FORM = "application/x-www-form-urlencoded";
-    public static final String APP_JSON = "application/json";
-    public static final String APP_BINARY = "application/octet-stream";
-    public static final String TEXT_PLAIN = "text/plain";
-    public static final String HDR_CONTENT_TYPE = "Content-Type";
-    public static final String HDR_ACCEPT = "Accept";
-    public static final String HDR_USER_AGENT = "User-Agent";
+    public static final String DEFAULT_USER_AGENT = Const.DEFAULT_USER_AGENT;
+    public static final String APP_FORM = Const.APP_FORM;
+    public static final String APP_JSON = Const.APP_JSON;
+    public static final String APP_BINARY = Const.APP_BINARY;
+    public static final String TEXT_PLAIN = Const.TEXT_PLAIN;
+    public static final String HDR_CONTENT_TYPE = Const.HDR_CONTENT_TYPE;
+    public static final String HDR_ACCEPT = Const.HDR_ACCEPT;
+    public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
 
-    static final Class BYTE_ARRAY_CLASS = (new byte[0]).getClass();
-    static final String UTF8 = "utf-8";
-
-    static final Map<String, Object> globalHeaders = new HashMap<String, Object>();
+    static final Map<String, Object> globalHeaders = new LinkedHashMap<String, Object>();
     static String globalBaseUri;
-    static String globalEncoding = UTF8;
+    static String globalEncoding = Const.UTF8;
 
     static int connectTimeout = 10000;
     static int readTimeout = 60000;
@@ -113,7 +111,7 @@ public class Webb {
         InputStream is = null;
         OutputStream os = null;
         HttpURLConnection connection = null;
-        HttpURLConnection.setFollowRedirects(false);
+        HttpURLConnection.setFollowRedirects(followRedirects);
 
         try {
             String uri = request.uri;
@@ -136,17 +134,14 @@ public class Webb {
                 connection.setIfModifiedSince(request.ifModifiedSince);
             }
 
-            // TODO create and obey an overwrite rule for headers
-            WebbUtils.addRequestProperties(connection, globalHeaders);
-            WebbUtils.addRequestProperties(connection, defaultHeaders);
-            WebbUtils.addRequestProperties(connection, request.headers);
+            WebbUtils.addRequestProperties(connection, mergeHeaders(request.headers));
             if (clazz == JSONObject.class || clazz == JSONArray.class) {
                 WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);
             }
 
             byte[] requestBody = null;
             if (request.method != Request.Method.GET && request.method != Request.Method.DELETE) {
-                requestBody = getPayloadAsBytesAndSetContentType(connection, request);
+                requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, jsonIndentFactor);
                 if (requestBody != null) {
                     connection.setDoOutput(true);
                 }
@@ -175,7 +170,7 @@ public class Webb {
                 response.ensureSuccess();
             }
 
-            parseResponseBody(clazz, response, responseBody);
+            WebbUtils.parseResponseBody(clazz, response, responseBody);
 
             return response;
 
@@ -200,58 +195,6 @@ public class Webb {
         }
     }
 
-    private <T> void parseResponseBody(Class<T> clazz, Response<T> response, byte[] responseBody)
-            throws UnsupportedEncodingException {
-
-        if (responseBody == null || clazz == Void.class) {
-            return;
-        }
-
-        // we are ignoring headers describing the content type of the response, instead
-        // try to force the content based on the type the client is expecting it (clazz)
-        if (clazz == String.class) {
-            response.setBody(new String(responseBody, UTF8));
-        } else if (clazz == BYTE_ARRAY_CLASS) {
-            response.setBody(responseBody);
-        } else if (clazz == JSONObject.class) {
-            response.setBody(WebbUtils.toJsonObject(responseBody));
-        } else if (clazz == JSONArray.class) {
-            response.setBody(WebbUtils.toJsonArray(responseBody));
-        }
-    }
-
-    private byte[] getPayloadAsBytesAndSetContentType(HttpURLConnection connection, Request request) throws JSONException, UnsupportedEncodingException {
-        byte[] requestBody = null;
-        String bodyStr = null;
-
-        if (request.params != null) {
-            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_FORM);
-            bodyStr = WebbUtils.queryString(request.params);
-        } else if (request.payload == null) {
-            requestBody = null;
-        } else if (request.payload instanceof JSONObject) {
-            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
-            bodyStr = ((JSONObject)request.payload).toString(jsonIndentFactor);
-        } else if (request.payload instanceof JSONArray) {
-            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_JSON);
-            bodyStr = ((JSONArray)request.payload).toString(jsonIndentFactor);
-        } else if (request.payload instanceof byte[]) {
-            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, APP_BINARY);
-            requestBody = (byte[]) request.payload;
-        } else {
-            WebbUtils.ensureRequestProperty(connection, HDR_CONTENT_TYPE, TEXT_PLAIN);
-            bodyStr = request.payload.toString();
-        }
-        if (bodyStr != null) {
-            requestBody = bodyStr.getBytes(UTF8);
-        }
-
-        if (requestBody != null) {
-            connection.setFixedLengthStreamingMode(requestBody.length);
-        }
-        return requestBody;
-    }
-
     private void prepareSslConnection(HttpURLConnection connection) {
         if ((hostnameVerifier != null || sslSocketFactory != null) && connection instanceof HttpsURLConnection) {
             HttpsURLConnection sslConnection = (HttpsURLConnection) connection;
@@ -262,6 +205,28 @@ public class Webb {
                 sslConnection.setSSLSocketFactory(sslSocketFactory);
             }
         }
+    }
+
+    Map<String, Object> mergeHeaders(Map<String, Object> requestHeaders) {
+        Map<String, Object> headers = null;
+        if (!globalHeaders.isEmpty()) {
+            headers = new LinkedHashMap<String, Object>();
+            headers.putAll(globalHeaders);
+        }
+        if (defaultHeaders != null) {
+            if (headers == null) {
+                headers = new LinkedHashMap<String, Object>();
+            }
+            headers.putAll(defaultHeaders);
+        }
+        if (requestHeaders != null) {
+            if (headers == null) {
+                headers = requestHeaders;
+            } else {
+                headers.putAll(requestHeaders);
+            }
+        }
+        return headers;
     }
 
 }

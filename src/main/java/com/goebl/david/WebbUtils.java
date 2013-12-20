@@ -20,6 +20,7 @@ import java.util.*;
  * @author hgoebl
  */
 public class WebbUtils {
+
     public static String queryString(Map<String, Object> values) {
         StringBuilder sbuf = new StringBuilder();
         String separator = "";
@@ -48,7 +49,7 @@ public class WebbUtils {
     public static JSONObject toJsonObject(byte[] bytes) {
         String json;
         try {
-            json = new String(bytes, Webb.UTF8);
+            json = new String(bytes, Const.UTF8);
         } catch (UnsupportedEncodingException e) {
             throw new WebbException(e);
         }
@@ -63,7 +64,7 @@ public class WebbUtils {
     public static JSONArray toJsonArray(byte[] bytes) {
         String json;
         try {
-            json = new String(bytes, Webb.UTF8);
+            json = new String(bytes, Const.UTF8);
         } catch (UnsupportedEncodingException e) {
             throw new WebbException(e);
         }
@@ -91,7 +92,7 @@ public class WebbUtils {
         return responseBody;
     }
 
-    public static void addRequestProperties(HttpURLConnection connection, Map<String, Object> map) {
+    static void addRequestProperties(HttpURLConnection connection, Map<String, Object> map) {
         if (map == null || map.isEmpty()) {
             return;
         }
@@ -100,7 +101,7 @@ public class WebbUtils {
         }
     }
 
-    public static void addRequestProperties(HttpURLConnection connection, String name, Object value) {
+    static void addRequestProperties(HttpURLConnection connection, String name, Object value) {
         if (name == null || name.length() == 0 || value == null) {
             throw new IllegalArgumentException("name and value must not be empty");
         }
@@ -117,7 +118,7 @@ public class WebbUtils {
         connection.addRequestProperty(name, valueAsString);
     }
 
-    public static void ensureRequestProperty(HttpURLConnection connection, String name, Object value) {
+    static void ensureRequestProperty(HttpURLConnection connection, String name, Object value) {
         if (!connection.getRequestProperties().containsKey(name)) {
             addRequestProperties(connection, name, value);
         }
@@ -130,4 +131,61 @@ public class WebbUtils {
         format.setTimeZone(TimeZone.getTimeZone("GMT"));
         return format;
     }
+
+    static byte[] getPayloadAsBytesAndSetContentType(
+            HttpURLConnection connection,
+            Request request,
+            int jsonIndentFactor) throws JSONException, UnsupportedEncodingException {
+
+        byte[] requestBody = null;
+        String bodyStr = null;
+
+        if (request.params != null) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_FORM);
+            bodyStr = WebbUtils.queryString(request.params);
+        } else if (request.payload == null) {
+            requestBody = null;
+        } else if (request.payload instanceof JSONObject) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
+            bodyStr = ((JSONObject)request.payload).toString(jsonIndentFactor);
+        } else if (request.payload instanceof JSONArray) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
+            bodyStr = ((JSONArray)request.payload).toString(jsonIndentFactor);
+        } else if (request.payload instanceof byte[]) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
+            requestBody = (byte[]) request.payload;
+        } else {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);
+            bodyStr = request.payload.toString();
+        }
+        if (bodyStr != null) {
+            requestBody = bodyStr.getBytes(Const.UTF8);
+        }
+
+        if (requestBody != null) {
+            connection.setFixedLengthStreamingMode(requestBody.length);
+        }
+        return requestBody;
+    }
+
+    static <T> void parseResponseBody(Class<T> clazz, Response<T> response, byte[] responseBody)
+            throws UnsupportedEncodingException {
+
+        if (responseBody == null || clazz == Void.class) {
+            return;
+        }
+
+        // we are ignoring headers describing the content type of the response, instead
+        // try to force the content based on the type the client is expecting it (clazz)
+        if (clazz == String.class) {
+            response.setBody(new String(responseBody, Const.UTF8));
+        } else if (clazz == Const.BYTE_ARRAY_CLASS) {
+            response.setBody(responseBody);
+        } else if (clazz == JSONObject.class) {
+            response.setBody(WebbUtils.toJsonObject(responseBody));
+        } else if (clazz == JSONArray.class) {
+            response.setBody(WebbUtils.toJsonArray(responseBody));
+        }
+    }
+
 }
