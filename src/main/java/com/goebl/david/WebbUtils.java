@@ -21,6 +21,8 @@ import java.util.*;
  */
 public class WebbUtils {
 
+    private WebbUtils() {}
+
     public static String queryString(Map<String, Object> values) {
         StringBuilder sbuf = new StringBuilder();
         String separator = "";
@@ -28,7 +30,7 @@ public class WebbUtils {
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             String value = entry.getValue() == null ? "" : String.valueOf(entry.getValue());
             sbuf.append(separator);
-            sbuf.append(entry.getKey());
+            sbuf.append(urlEncode(entry.getKey()));
             sbuf.append('=');
             sbuf.append(urlEncode(value));
             separator = "&";
@@ -97,11 +99,11 @@ public class WebbUtils {
             return;
         }
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            addRequestProperties(connection, entry.getKey(), entry.getValue());
+            addRequestProperty(connection, entry.getKey(), entry.getValue());
         }
     }
 
-    static void addRequestProperties(HttpURLConnection connection, String name, Object value) {
+    static void addRequestProperty(HttpURLConnection connection, String name, Object value) {
         if (name == null || name.length() == 0 || value == null) {
             throw new IllegalArgumentException("name and value must not be empty");
         }
@@ -120,7 +122,7 @@ public class WebbUtils {
 
     static void ensureRequestProperty(HttpURLConnection connection, String name, Object value) {
         if (!connection.getRequestProperties().containsKey(name)) {
-            addRequestProperties(connection, name, value);
+            addRequestProperty(connection, name, value);
         }
     }
 
@@ -147,10 +149,14 @@ public class WebbUtils {
             requestBody = null;
         } else if (request.payload instanceof JSONObject) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
-            bodyStr = ((JSONObject)request.payload).toString(jsonIndentFactor);
+            bodyStr = jsonIndentFactor >= 0
+                    ? ((JSONObject) request.payload).toString(jsonIndentFactor)
+                    : ((JSONObject) request.payload).toString(0);
         } else if (request.payload instanceof JSONArray) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
-            bodyStr = ((JSONArray)request.payload).toString(jsonIndentFactor);
+            bodyStr = jsonIndentFactor >= 0
+                    ? ((JSONArray) request.payload).toString(jsonIndentFactor)
+                    : ((JSONArray) request.payload).toString(0);
         } else if (request.payload instanceof byte[]) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
             requestBody = (byte[]) request.payload;

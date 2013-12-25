@@ -37,7 +37,7 @@ public class Webb {
 
     static int connectTimeout = 10000;
     static int readTimeout = 60000;
-    static int jsonIndentFactor = 0;
+    static int jsonIndentFactor = -1;
 
     boolean followRedirects = false;
     String baseUri;
@@ -61,6 +61,12 @@ public class Webb {
         Webb.globalEncoding = encoding;
     }
 
+    /**
+     * The number of characters to indent child properties, <code>-1</code> for "productive" code.
+     * <br>
+     * Default is production ready JSON (-1) means no indentation (single-line serialization).
+     * @param indentFactor the number of spaces to indent
+     */
     public static void setJsonIndentFactor(int indentFactor) {
         Webb.jsonIndentFactor = indentFactor;
     }
