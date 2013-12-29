@@ -9,23 +9,23 @@ module.exports = function registerRoutes(app) {
 
     function returnFormAsText(req, res) {
         res.header('Content-Type', 'text/plain');
-        res.send(req.param('p1') + ', ' + req.param('p2')).end();
+        res.send(req.param('p1') + ', ' + req.param('p2'));
     }
 
     app.get('/simple.json', function (req, res) {
-        res.json({p1: req.param('p1'), p2: req.param('p2')}).end();
+        res.json({p1: req.param('p1'), p2: req.param('p2')});
     });
 
     app.post('/simple.json', function (req, res) {
-        res.status(201).header("Link", "http://example.com/4711").end();
+        res.status(201).header("Link", "http://example.com/4711").send();
     });
 
     app.put('/simple.json', function (req, res) {
-        res.json(req.body).end();
+        res.json(req.body);
     });
 
     app.del('/simple', function (req, res) {
-        res.status(204).end();
+        res.send(204);
     });
 
     app.get('/parameter-types', function (req, res) {

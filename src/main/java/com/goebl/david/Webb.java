@@ -7,6 +7,9 @@ import org.json.JSONObject;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,6 +33,7 @@ public class Webb {
     public static final String HDR_CONTENT_TYPE = Const.HDR_CONTENT_TYPE;
     public static final String HDR_ACCEPT = Const.HDR_ACCEPT;
     public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
+    public static final String HDR_AUTHORIZATION = "Authorization";
 
     static final Map<String, Object> globalHeaders = new LinkedHashMap<String, Object>();
     static String globalBaseUri;
@@ -115,7 +119,6 @@ public class Webb {
         Response<T> response = new Response<T>(request);
 
         InputStream is = null;
-        OutputStream os = null;
         HttpURLConnection connection = null;
         HttpURLConnection.setFollowRedirects(followRedirects);
 
@@ -157,11 +160,11 @@ public class Webb {
 
             // write the body (of course headers are written first by HUC)
             if (requestBody != null) {
-                os = connection.getOutputStream();
-                os.write(requestBody);
-                os.flush();
-                os.close();
-                os = null;
+                if (request.streamPayload) {
+                    streamBody(connection, request.payload);
+                } else {
+                    writeBody(connection, requestBody);
+                }
             }
 
             // get the response body (if any)
@@ -192,11 +195,48 @@ public class Webb {
             if (is != null) {
                 try { is.close(); } catch (Exception ignored) {}
             }
+            if (connection != null) {
+                try { connection.disconnect(); } catch (Exception ignored) {}
+            }
+        }
+    }
+
+    private void writeBody(HttpURLConnection connection, byte[] body) throws IOException {
+        OutputStream os = null;
+        try {
+            os = connection.getOutputStream();
+            os.write(body);
+            os.flush();
+        } finally {
             if (os != null) {
                 try { os.close(); } catch (Exception ignored) {}
             }
-            if (connection != null) {
-                try { connection.disconnect(); } catch (Exception ignored) {}
+        }
+    }
+
+    private void streamBody(HttpURLConnection connection, Object body) throws IOException {
+        InputStream is;
+        boolean closeStream;
+
+        if (body instanceof File) {
+            is = new FileInputStream((File) body);
+            closeStream = true;
+        } else {
+            is = (InputStream) body;
+            closeStream = false;
+        }
+
+        OutputStream os = null;
+        try {
+            os = connection.getOutputStream();
+            WebbUtils.copyStream(is, os);
+            os.flush();
+        } finally {
+            if (os != null) {
+                try { os.close(); } catch (Exception ignored) {}
+            }
+            if (is != null && closeStream) {
+                try { is.close(); } catch (Exception ignored) {}
             }
         }
     }

@@ -21,7 +21,7 @@ module.exports = function registerRoutes(app) {
             ok &= req.header('user-agent') === s;
         }
 
-        res.status(ok ? 200 : 403).end();
+        res.send(ok ? 200 : 403);
     });
 
     app.get('/headers/out', function (req, res) {
@@ -31,14 +31,14 @@ module.exports = function registerRoutes(app) {
         res.header('x-test-date', new Date());
         res.header('Date', new Date());
 
-        res.status(200).end();
+        res.send(200);
     });
 
     app.get('/headers/expires', function (req, res) {
         var offset = parseInt(req.param('offset') || '3600000', 10);
 
         res.header('Expires', new Date(Date.now() + offset));
-        res.status(200).end();
+        res.send(200);
     });
 
     app.get('/headers/if-modified-since', function (req, res) {
@@ -59,7 +59,7 @@ module.exports = function registerRoutes(app) {
         var lastModified = parseInt(req.param('lastModified'), 10);
 
         res.header('Last-Modified', new Date(lastModified));
-        res.status(200).end();
+        res.send(200);
     });
 
 };

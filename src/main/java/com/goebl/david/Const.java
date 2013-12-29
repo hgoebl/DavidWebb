@@ -14,5 +14,6 @@ class Const {
     static final String HDR_USER_AGENT = "User-Agent";
     static final String UTF8 = "utf-8";
 
-    static final Class BYTE_ARRAY_CLASS = (new byte[0]).getClass();
+    static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    static final Class BYTE_ARRAY_CLASS = EMPTY_BYTE_ARRAY.getClass();
 }

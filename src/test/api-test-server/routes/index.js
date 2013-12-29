@@ -15,4 +15,5 @@ module.exports = function registerRoutes(app) {
 
     require('./simple.js')(app);
     require('./headers.js')(app);
+    require('./upload.js')(app);
 };

@@ -1,11 +1,14 @@
 package com.goebl.david;
 
 import org.json.JSONObject;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.net.ssl.*;
 
+import java.io.*;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -21,8 +24,26 @@ public class TestWebb {
     private static final String SIMPLE_ASCII = "Hello/World & Co.?";
     private static final String COMPLEX_UTF8 = "München 1 Maß 10 €";
     private static final String HTTP_MESSAGE_OK = "OK";
+    private static final File TEST_FILE = new File("test-upload.tmp");
 
     Webb webb;
+
+    @BeforeClass public static void createTestFile() throws Exception {
+        FileOutputStream fos = new FileOutputStream(TEST_FILE);
+        byte[] bytes = new byte[1000];
+        for (int i = 0; i < bytes.length; ++i) {
+            bytes[i] = (byte) 64;
+        }
+        for (int i = 0; i < 5; ++i) {
+            fos.write(bytes);
+        }
+        fos.flush();
+        fos.close();
+    }
+
+    @AfterClass public static void unlinkTestFile() {
+        TEST_FILE.delete();
+    }
 
     @Before public void createWebb() {
         Webb.setGlobalHeader(Webb.HDR_USER_AGENT, Webb.DEFAULT_USER_AGENT);
@@ -215,6 +236,28 @@ public class TestWebb {
 
         assertEquals(200, response.getStatusCode());
         assertEquals(lastModified, response.getLastModified());
+    }
+
+    @Test public void uploadFile() throws Exception {
+        Response<Void> response = webb
+                .post("/upload")
+                .body(TEST_FILE)
+                .asVoid();
+
+        assertEquals(201, response.getStatusCode());
+    }
+
+    @Test public void uploadStream() throws Exception {
+        InputStream inputStream = new FileInputStream(TEST_FILE);
+
+        Response<Void> response = webb
+                .post("/upload")
+                .body(inputStream)
+                .asVoid();
+
+        inputStream.close();
+
+        assertEquals(201, response.getStatusCode());
     }
 
     @Test public void httpsValidCertificate() throws Exception {

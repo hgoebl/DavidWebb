@@ -2,18 +2,6 @@
 
 Lightweight Java HTTP-Client for calling JSON REST-Services (especially made for Android).
 
----
-
-```text
-           _              _             _                       _
- _ _ ___ _| |___ ___    _| |___ _ _ ___| |___ ___ _____ ___ ___| |_
-| | |   | . | -_|  _|  | . | -_| | | -_| | . | . |     | -_|   |  _|
-|___|_|_|___|___|_|    |___|___|\_/|___|_|___|  _|_|_|_|___|_|_|_|
-                                             |_|
-```
-
----
-
 ## Problem
 
 If you have to call a RESTful Webservice from Java, especially if you are on Android, you have some options:
@@ -22,7 +10,7 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
    But wait a moment -
    [Google doesn't recommend using it](http://android-developers.blogspot.de/2011/09/androids-http-clients.html),
    only on very old Android versions.
- * Use `HttpUrlConnection`. This is what Google recommends for newer Android versions (>= Gingerbread).
+ * Use `HttpURLConnection`. This is what Google recommends for newer Android versions (>= Gingerbread).
    It is part of JDK, but it's cumbersome to use (if not to say a nightmare).
  * Add `Unirest`, `Restlet` or some other "all-you-can-eat", universal, multi-part, File-upload and all-cases
    supporting library which adds some hundred KB of jars to your APK.
@@ -32,19 +20,34 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
 **DavidWebb** is a small wrapper around
 [HttpUrlConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
 It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
-lightweight (~14 KB jar) and super-easy to use.
+lightweight (~15 KB jar) and super-easy to use.
 
-## Features ###
+## Features ##
 
   * Supports GET, POST, PUT, DELETE
   * add HTTP headers (per request, per client or globally)
-  * convert params to `www-form-urlencoded` body or URI search params
+  * convert params to `x-www-form-urlencoded` body **or** URI search params
   * fluent API
-  * org.json support (JSONObject, JSONArray) as payload in both directions
+  * org.json support (JSONObject, JSONArray) as payload in both directions (up/down)
   * wraps all Exceptions in a WebbException (a RuntimeException)
   * automatically sets many boiler-plate HTTP headers (like 'Accept', 'Content-Type', 'Content-Length')
   * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
-  * pass-through to "real" connection for special cases (e.g. get client certificate)
+  * pass-through to "real" connection for special cases
+
+## Non-Features ##
+
+Following features are not supported and there are no plans to realize them:
+
+  * Cookie management (read `Set-Cookie` header from response and set `Cookie` header for request)
+  * Comfortable Basic Authentication (it's not hard to implement it above of DavidWebb, see below)
+  * Multi-Part upload
+  * Mixing URL-parameters and x-www-form-urlencoded POST bodies.<br>
+    Workaround: build the URI with the help of `WebbUtils.queryString` and use `Request.param()` for
+    the form-fields.
+
+Where not stated, the workaround is to use another library or implement it above of DavidWebb.
+If you think your implementation might be useful for others and it's not blowing up the size of
+the JAR, please create a pull request. (Adding heavy dependencies is not an option.)
 
 # Usage Examples
 
@@ -100,6 +103,20 @@ JSONObject result = webb
         .getBody();
 
 JSONArray routes = result.getJSONArray("routes");
+```
+
+You have to do Basic Authentication?
+
+This authorization method uses a Base64 encoded string. Unfortunately Java SE doesn't provide a
+Base64 encoder. Because DavidWebb wants to be light and Android already provides a Base64 support class,
+it's left to you to insert a few lines of code. As you can see, it's not hard work.
+Use one of the methods to set a header and set Authorization header by yourself:
+
+```java
+byte[] credentials = (username + ":" + password).getBytes("UTF-8");
+String auth = "Basic " + Base64.encodeToString(credentials, 0);
+Webb webb = Webb.create();
+webb.setDefaultHeader(Webb.HDR_AUTHORIZATION, auth);
 ```
 
 If you want to see more examples, just have a look at the JUnit TestCase (src/test/java/...).
@@ -165,12 +182,14 @@ And if you don't want to build the library, just take the jar from the `dist` fo
 
 # TODO
 
-## Features
+## Features (planned)
   * unprefixJson <http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx>
-  * decorator beforeSend - provide hooks to manipulate request before send
-  * decorator afterReceive - provide hooks to manipulate raw response after receiving it
-  * basicAuth(name, password) - set header and encode base64
-  * rawFile, textFile(File, encoding) - process body(File)
+
+## Features (only ideas)
+  * decorator/interceptor beforeSend - provide hooks to manipulate request before send
+  * decorator/interceptor afterReceive - provide hooks to manipulate raw response after receiving it
+
+Create an issue if you want to have one of those ideas implemented.
 
 ## Documentation / Distribution
   * Write JavaDoc

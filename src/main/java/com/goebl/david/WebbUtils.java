@@ -5,8 +5,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
@@ -23,6 +25,13 @@ public class WebbUtils {
 
     private WebbUtils() {}
 
+    /**
+     * Convert a Map to a query string.
+     * @param values the map with the values
+     *               <code>null</code> will be encoded as empty string, all other objects are converted to
+     *               String by calling its <code>toString()</code> method.
+     * @return e.g. "key1=value&key2=&email=max%40example.com"
+     */
     public static String queryString(Map<String, Object> values) {
         StringBuilder sbuf = new StringBuilder();
         String separator = "";
@@ -39,15 +48,12 @@ public class WebbUtils {
         return sbuf.toString();
     }
 
-    public static String urlEncode(String value) {
-        try {
-            return URLEncoder.encode(value, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            // Log.e(TAG, e.toString());
-            return value;
-        }
-    }
-
+    /**
+     * Convert a byte array to a JSONObject.
+     * @param bytes a UTF-8 encoded string representing a JSON object.
+     * @return the parsed object
+     * @throws WebbException in case of error (usually a parsing error due to invalid JSON)
+     */
     public static JSONObject toJsonObject(byte[] bytes) {
         String json;
         try {
@@ -63,6 +69,12 @@ public class WebbUtils {
         }
     }
 
+    /**
+     * Convert a byte array to a JSONArray.
+     * @param bytes a UTF-8 encoded string representing a JSON array.
+     * @return the parsed JSON array
+     * @throws WebbException in case of error (usually a parsing error due to invalid JSON)
+     */
     public static JSONArray toJsonArray(byte[] bytes) {
         String json;
         try {
@@ -78,20 +90,67 @@ public class WebbUtils {
         }
     }
 
+    /**
+     * Read an <code>InputStream</code> into <code>byte[]</code> until EOF.
+     * <br/>
+     * Does not close the InputStream!
+     *
+     * @param is the stream to read the bytes from
+     * @return all read bytes as an array
+     * @throws IOException
+     */
     public static byte[] readBytes(InputStream is) throws IOException {
         if (is == null) {
             return null;
         }
         byte[] responseBody;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int count;
-        while ((count = is.read(buffer)) > 0) {
-            baos.write(buffer, 0, count);
-        }
+        copyStream(is, baos);
         baos.close();
         responseBody = baos.toByteArray();
         return responseBody;
+    }
+
+    /**
+     * Copy complete content of <code>InputStream</code> to <code>OutputStream</code> until EOF.
+     * <br/>
+     * Does not close the InputStream nor OutputStream!
+     *
+     * @param input the stream to read the bytes from
+     * @param output the stream to write the bytes to
+     * @throws IOException
+     */
+    public static void copyStream(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[1024];
+        int count;
+        while ((count = input.read(buffer)) != -1) {
+            output.write(buffer, 0, count);
+        }
+    }
+
+    /**
+     * Creates a new instance of a <code>DateFormat</code> for RFC1123 compliant dates.
+     * <br/>
+     * Should be stored for later use but be aware that this DateFormat is not Thread-safe!
+     * <br/>
+     * If you have to deal with dates in this format with JavaScript, it's easy, because the JavaScript
+     * Date object has a constructor for strings formatted this way.
+     * @return a new instance
+     */
+    public static DateFormat getRfc1123DateFormat() {
+        DateFormat format = new SimpleDateFormat(
+                "EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+        format.setLenient(false);
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return format;
+    }
+
+    static String urlEncode(String value) {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            return value;
+        }
     }
 
     static void addRequestProperties(HttpURLConnection connection, Map<String, Object> map) {
@@ -126,14 +185,6 @@ public class WebbUtils {
         }
     }
 
-    public static DateFormat getRfc1123DateFormat() {
-        DateFormat format = new SimpleDateFormat(
-                "EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-        format.setLenient(false);
-        format.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return format;
-    }
-
     static byte[] getPayloadAsBytesAndSetContentType(
             HttpURLConnection connection,
             Request request,
@@ -141,6 +192,7 @@ public class WebbUtils {
 
         byte[] requestBody = null;
         String bodyStr = null;
+        long length = 0L;
 
         if (request.params != null) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_FORM);
@@ -160,16 +212,30 @@ public class WebbUtils {
         } else if (request.payload instanceof byte[]) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
             requestBody = (byte[]) request.payload;
+            length = requestBody.length;
+        } else if (request.payload instanceof File) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
+            requestBody = Const.EMPTY_BYTE_ARRAY;
+            length = ((File) request.payload).length();
+        } else if (request.payload instanceof InputStream) {
+            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
+            requestBody = Const.EMPTY_BYTE_ARRAY;
+            length = -1L;
         } else {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);
             bodyStr = request.payload.toString();
         }
         if (bodyStr != null) {
             requestBody = bodyStr.getBytes(Const.UTF8);
+            length = requestBody.length;
         }
 
         if (requestBody != null) {
-            connection.setFixedLengthStreamingMode(requestBody.length);
+            if (length < 0) {
+                connection.setChunkedStreamingMode(-1); // use default chunk size
+            } else {
+                connection.setFixedLengthStreamingMode(length);
+            }
         }
         return requestBody;
     }
