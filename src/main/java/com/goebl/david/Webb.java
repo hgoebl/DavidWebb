@@ -37,7 +37,6 @@ public class Webb {
 
     static final Map<String, Object> globalHeaders = new LinkedHashMap<String, Object>();
     static String globalBaseUri;
-    static String globalEncoding = Const.UTF8;
 
     static int connectTimeout = 10000;
     static int readTimeout = 60000;
@@ -49,20 +48,50 @@ public class Webb {
     SSLSocketFactory sslSocketFactory;
     HostnameVerifier hostnameVerifier;
 
+    private Webb() {}
+
+    /**
+     * Create an instance which can be reused for multiple requests in the same Thread.
+     * @return the created instance.
+     */
     public static Webb create() {
         return new Webb();
     }
 
+    /**
+     * Set the value for a named header which is valid for all requests in the running JVM.
+     * <br/>
+     * The value can be overwritten by calling {@link Webb#setDefaultHeader(String, Object)} and/or
+     * {@link com.goebl.david.Request#header(String, Object)}.
+     * <br/>
+     * For the supported types for values see {@link Request#header(String, Object)}.
+     *
+     * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
+     * @param value value of the header. If <code>null</code> the header value is cleared (effectively not set).
+     *
+     * @see #setDefaultHeader(String, Object)
+     * @see com.goebl.david.Request#header(String, Object)
+     */
     public static void setGlobalHeader(String name, Object value) {
-        globalHeaders.put(name, value);
+        if (value != null) {
+            globalHeaders.put(name, value);
+        } else {
+            globalHeaders.remove(name);
+        }
     }
 
+    /**
+     * Set the base URI for all requests starting in this JVM from now.
+     * <br/>
+     * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
+     * the URIs relatively. The value is only taken when {@link Webb#setBaseUri(String)} is not called or
+     * called with <code>null</code>.
+     *
+     * @param globalBaseUri the prefix for all URIs of new Requests.
+     * @see #setBaseUri(String)
+     */
     public static void setGlobalBaseUri(String globalBaseUri) {
         Webb.globalBaseUri = globalBaseUri;
-    }
-
-    public static void setGlobalEncoding(String encoding) {
-        Webb.globalEncoding = encoding;
     }
 
     /**
@@ -75,37 +104,93 @@ public class Webb {
         Webb.jsonIndentFactor = indentFactor;
     }
 
+    /**
+     * Set a custom {@link javax.net.ssl.SSLSocketFactory}, most likely to relax Certification checking.
+     * @param sslSocketFactory the factory to use (see test cases for an example).
+     */
     public void setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
         this.sslSocketFactory = sslSocketFactory;
     }
 
+    /**
+     * Set a custom {@link javax.net.ssl.HostnameVerifier}, most likely to relax host-name checking.
+     * @param hostnameVerifier the verifier (see test cases for an example).
+     */
     public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
         this.hostnameVerifier = hostnameVerifier;
     }
 
+    /**
+     * Set the base URI for all requests created from this instance.
+     * <br/>
+     * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
+     * the URIs relatively. The value takes precedence over the value set in {@link #setGlobalBaseUri(String)}.
+     *
+     * @param baseUri the prefix for all URIs of new Requests.
+     * @see #setGlobalBaseUri(String)
+     */
     public void setBaseUri(String baseUri) {
         this.baseUri = baseUri;
     }
 
+    /**
+     * Set the value for a named header which is valid for all requests created by this instance.
+     * <br/>
+     * The value takes precedence over {@link Webb#setGlobalHeader(String, Object)} but can be overwritten by
+     * {@link com.goebl.david.Request#header(String, Object)}.
+     * <br/>
+     * For the supported types for values see {@link Request#header(String, Object)}.
+     *
+     * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
+     * @param value value of the header. If <code>null</code> the header value is cleared (effectively not set).
+     *              When setting the value to null, a value from global headers can shine through.
+     *
+     * @see #setGlobalHeader(String, Object)
+     * @see com.goebl.david.Request#header(String, Object)
+     */
     public void setDefaultHeader(String name, Object value) {
         if (defaultHeaders == null) {
             defaultHeaders = new HashMap<String, Object>();
         }
-        defaultHeaders.put(name, value);
+        if (value == null) {
+            defaultHeaders.remove(name);
+        } else {
+            defaultHeaders.put(name, value);
+        }
     }
 
+    /**
+     * Creates a <b>GET HTTP</b> request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
     public Request get(String pathOrUri) {
         return new Request(this, Request.Method.GET, buildPath(pathOrUri));
     }
 
+    /**
+     * Creates a <b>POST</b> HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
     public Request post(String pathOrUri) {
         return new Request(this, Request.Method.POST, buildPath(pathOrUri));
     }
 
+    /**
+     * Creates a <b>PUT</b> HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
     public Request put(String pathOrUri) {
         return new Request(this, Request.Method.PUT, buildPath(pathOrUri));
     }
 
+    /**
+     * Creates a <b>DELETE</b> HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
     public Request delete(String pathOrUri) {
         return new Request(this, Request.Method.DELETE, buildPath(pathOrUri));
     }

@@ -121,7 +121,6 @@
                     <quiet>true</quiet>
                     <nonavbar>true</nonavbar>
                     <notree>true</notree>
-                    <nocomment>true</nocomment>
                     <nohelp>true</nohelp>
                 </configuration>
                 <executions>

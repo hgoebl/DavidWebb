@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Builder for an HTTP request.
  * <br/>
- * You can some "real-life" usage examples in {@link Webb} or
+ * You can some "real-life" usage examples at
  * <a href="https://github.com/hgoebl/DavidWebb">github.com/hgoebl/DavidWebb</a>.
  * <br/>
  *
@@ -120,18 +120,12 @@ public class Request {
      *         of bytes of the file. There is absolutely no conversion done. So if you want to upload
      *         e.g. a text-file and convert it to another encoding than stored on disk, you have to do
      *         it by yourself.
-     *
-     *         TODO implement and test
-     *
      *     </li>
      *     <li>
      *         {@link java.io.InputStream}, HTTP header 'Content-Type' will be set to BINARY, if not set;
      *         Similar to <code>File</code>. Content-Length cannot be set (which has some drawbacks compared
      *         to knowing the size of the body in advance).<br/>
      *         <strong>You have to care for closing the stream!</strong>
-     *
-     *         TODO implement and test
-     *
      *     </li>
      * </ul>
      *
@@ -147,54 +141,104 @@ public class Request {
         return this;
     }
 
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#useCaches">
+     *     URLConnection.useCaches</a>
+     * @param useCaches If <code>true</code>, the protocol is allowed to use caching whenever it can.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
     public Request useCaches(boolean useCaches) {
         this.useCaches = useCaches;
         return this;
     }
 
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setIfModifiedSince(long)">
+     *     URLConnection.setIfModifiedSince()</a>
+     * @param ifModifiedSince A nonzero value gives a time as the number of milliseconds since January 1, 1970, GMT.
+     *                        The object is fetched only if it has been modified more recently than that time.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
     public Request ifModifiedSince(long ifModifiedSince) {
         this.ifModifiedSince = ifModifiedSince;
         return this;
     }
 
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setConnectTimeout(int)">
+     *     URLConnection.setConnectTimeout</a>
+     * @param connectTimeout sets a specified timeout value, in milliseconds. <code>0</code> means infinite timeout.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
     public Request connectTimeout(int connectTimeout) {
         this.connectTimeout = connectTimeout;
         return this;
     }
 
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setReadTimeout(int)">
+     *     </a>
+     * @param readTimeout Sets the read timeout to a specified timeout, in milliseconds.
+     *                    <code>0</code> means infinite timeout.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
     public Request readTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
         return this;
     }
 
+    /**
+     * By calling this method, the HTTP status code is checked and a <code>WebbException</code> is thrown if
+     * the status code is not something like 2xx.<br/>
+     * <br/>
+     * Be careful! If you request resources e.g. with {@link #ifModifiedSince(long)}, an exception will also be
+     * thrown in the positive case of <code>304 Not Modified</code>.
+     *
+     * @return <code>this</code> for method chaining (fluent API)
+     */
     public Request ensureSuccess() {
         this.ensureSuccess = true;
         return this;
     }
 
+    /**
+     * Execute the request and expect the result to be convertible to <code>String</code>.
+     * @return the created <code>Response</code> object carrying the payload from the server as <code>String</code>
+     */
     public Response<String> asString() {
-        Response<String> response = webb.execute(this, String.class);
-        return response;
+        return webb.execute(this, String.class);
     }
 
+    /**
+     * Execute the request and expect the result to be convertible to <code>JSONObject</code>.
+     * @return the created <code>Response</code> object carrying the payload from the server as <code>JSONObject</code>
+     */
     public Response<JSONObject> asJsonObject() {
-        Response<JSONObject> response = webb.execute(this, JSONObject.class);
-        return response;
+        return webb.execute(this, JSONObject.class);
     }
 
+    /**
+     * Execute the request and expect the result to be convertible to <code>JSONArray</code>.
+     * @return the created <code>Response</code> object carrying the payload from the server as <code>JSONArray</code>
+     */
     public Response<JSONArray> asJsonArray() {
-        Response<JSONArray> response = webb.execute(this, JSONArray.class);
-        return response;
+        return webb.execute(this, JSONArray.class);
     }
 
+    /**
+     * Execute the request and expect the result to be convertible to <code>byte[]</code>.
+     * @return the created <code>Response</code> object carrying the payload from the server as <code>byte[]</code>
+     */
     public Response<byte[]> asBytes() {
-        Response<byte[]> response = (Response<byte[]>) webb.execute(this, Const.BYTE_ARRAY_CLASS);
-        return response;
+        return (Response<byte[]>) webb.execute(this, Const.BYTE_ARRAY_CLASS);
     }
 
+    /**
+     * Execute the request and expect no result payload (only status-code and headers).
+     * @return the created <code>Response</code> object where no payload is expected or simply will be ignored.
+     */
     public Response<Void> asVoid() {
-        Response<Void> response = webb.execute(this, Void.class);
-        return response;
+        return webb.execute(this, Void.class);
     }
 
 }

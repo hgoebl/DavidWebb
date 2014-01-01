@@ -23,14 +23,27 @@ public class Response<T> {
         this.body = (T) body;
     }
 
+    /**
+     * Access to the <code>Request</code> object (which will not be very useful in most cases).
+     * @return the request object which was responsible for creating this response.
+     */
     public Request getRequest() {
         return request;
     }
 
+    /**
+     * Returns the payload of the response converted to the given type.
+     * @return the converted payload (can be null).
+     */
     public T getBody() {
         return body;
     }
 
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#responseCode">
+     *     HttpURLConnection.responseCode</a>
+     * @return An int representing the three digit HTTP Status-Code.
+     */
     public int getStatusCode() {
         return statusCode;
     }
@@ -61,6 +74,10 @@ public class Response<T> {
 
     /**
      * Returns the MIME-type of the response body.
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getContentType()">
+     *     URLConnection.getContentType()</a>
+     *
      * @return e.g. "application/json", "text/plain", ...
      */
     public String getContentType() {
@@ -69,36 +86,96 @@ public class Response<T> {
 
     /**
      * Returns the date when the request was created (server-time).
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getDate()">
+     *     URLConnection.getDate()</a>
+     *
      * @return the parsed "Date" header or <code>null</code> if this header was not set.
      */
     public long getDate() {
         return connection.getDate();
     }
 
+    /**
+     * Returns the value of the expires header field.
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getExpiration()">
+     *     URLConnection.getExpiration()</a>
+     *
+     * @return the expiration date of the resource, or 0 if not known.
+     */
     public long getExpiration() {
         return connection.getExpiration();
     }
 
+    /**
+     * Returns the value of the last-modified header field.
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getLastModified()">
+     *     URLConnection.getLastModified()</a>
+     *
+     * @return the date the resource was last modified, or 0 if not known.
+     */
     public long getLastModified() {
         return connection.getLastModified();
     }
 
-    public String getHeaderField (String key) {
-        return connection.getHeaderField(key);
+    /**
+     * Returns the value of the named header field.
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderField(java.lang.String)">
+     *     URLConnection.getHeaderField()</a>
+     *
+     * @param name name of the header field
+     * @return the value of the named header field, or null
+     */
+    public String getHeaderField (String name) {
+        return connection.getHeaderField(name);
     }
 
+    /**
+     * Returns the value of the named field parsed as date (Millis since 1970).
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String, long)">
+     *     URLConnection.getHeaderFieldDate()</a>
+     *
+     * @param field name of the header field
+     * @param defaultValue the default value if the field is not present or malformed
+     * @return the value of the named header field, or the given default value
+     */
     public long getHeaderFieldDate (String field, long defaultValue) {
         return connection.getHeaderFieldDate(field, defaultValue);
     }
 
+    /**
+     * Returns the value of the named field parsed as a number.
+     * <br/>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String, int)">
+     *     URLConnection.getHeaderFieldInt()</a>
+     *
+     * @param field name of the header field
+     * @param defaultValue the default value if the field is not present or malformed
+     * @return the value of the named header field, or the given default value
+     */
     public int getHeaderFieldInt(String field, int defaultValue) {
         return connection.getHeaderFieldInt(field, defaultValue);
     }
 
+    /**
+     * Get the "real" connection, typically to call some getters which are not provided by this Response object.
+     * @return the connection object (many methods throw IllegalStateException depending on the internal state).
+     */
     public HttpURLConnection getConnection() {
         return connection;
     }
 
+    /**
+     * A shortcut to check for successful status codes and throw exception in case of non-2xx status codes.
+     * <br/>
+     * In many cases you will call {@link com.goebl.david.Request#ensureSuccess()} instead of this method.
+     * But there might be cases where you want to inspect the response-object first (check header values) and
+     * then have a short exit where the response-code is not suitable for further normal processing.
+     */
     public void ensureSuccess() {
         if (!isSuccess()) {
             throw new WebbException("Request failed: " + statusCode + " " + responseMessage);

@@ -18,9 +18,9 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
 ## Solved
 
 **DavidWebb** is a small wrapper around
-[HttpUrlConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
+[HttpURLConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
 It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
-lightweight (~15 KB jar) and super-easy to use.
+lightweight (~16 KB jar) and super-easy to use.
 
 ## Features ##
 
@@ -50,6 +50,9 @@ If you think your implementation might be useful for others and it's not blowing
 the JAR, please create a pull request. (Adding heavy dependencies is not an option.)
 
 # Usage Examples
+
+Below you can see some examples of how to use DavidWebb. And here you can find the
+[API Documentation](http://hgoebl.github.io/DavidWebb/).
 
 This is some code from a SyncAdapter of an Android App:
 
@@ -192,7 +195,5 @@ And if you don't want to build the library, just take the jar from the `dist` fo
 Create an issue if you want to have one of those ideas implemented.
 
 ## Documentation / Distribution
-  * Write JavaDoc
-  * Generate JavaDoc and publish on gh-pages
   * Extend Tests, test against httpbin.org
   * Upload maven artifact to central repository (OMG how easy this would be with node.js and npm!)
