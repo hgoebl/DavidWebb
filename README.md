@@ -52,7 +52,7 @@ the JAR, please create a pull request. (Adding heavy dependencies is not an opti
 # Usage Examples
 
 Below you can see some examples of how to use DavidWebb. And here you can find the
-[API Documentation](http://hgoebl.github.io/DavidWebb/).
+[API Documentation](http://hgoebl.github.io/DavidWebb/apidocs/).
 
 This is some code from a SyncAdapter of an Android App:
 
