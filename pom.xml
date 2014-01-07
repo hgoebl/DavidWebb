@@ -59,8 +59,8 @@
 
     <scm>
         <url>http://github.com/hgoebl/DavidWebb</url>
-        <connection>scm:git:git://github.com/hgoebl/DavidWebb.git</connection>
-        <developerConnection>scm:git:git@github.com/hgoebl/DavidWebb.git</developerConnection>
+        <connection>scm:git:git://github.com:hgoebl/DavidWebb.git</connection>
+        <developerConnection>scm:git:git@github.com:hgoebl/DavidWebb.git</developerConnection>
     </scm>
 
     <distributionManagement>
