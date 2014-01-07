@@ -134,6 +134,20 @@ if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
 }
 ```
 
+# Maven Coordinates
+
+```xml
+<dependency>
+    <groupId>com.goebl</groupId>
+    <artifactId>david-webb</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Gradle
+
+    'com.goebl:david-webb:1.0.0'
+
 # Background
 
 ## Not for you?
@@ -196,4 +210,3 @@ Create an issue if you want to have one of those ideas implemented.
 
 ## Documentation / Distribution
   * Extend Tests, test against httpbin.org
-  * Upload maven artifact to central repository (OMG how easy this would be with node.js and npm!)
