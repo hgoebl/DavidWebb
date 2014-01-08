@@ -136,6 +136,8 @@ if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
 
 # Maven Coordinates
 
+**Sorry, publishing to Maven Central unfortunately didn't work so far. Please download 1.0.0-SNAPSHOT from dist folder and stay tuned - it's on its way!**
+
 ```xml
 <dependency>
     <groupId>com.goebl</groupId>
