@@ -172,10 +172,8 @@ If **DavidWebb** is too lightweight and you're missing features, you can have a 
 
 ## The Name!?
 
-David **Webb** is the real name of **Jason** Bourne.
-
-So **JSON** and **Web**, did you get it? OK, might be silly, but Bourne 1-3 are my favorite films and so at
-least I can remember the name.
+David **Webb** is the real name of **Jason** Bourne. So **JSON** and **Web**, did you get it?
+OK, might be silly, but Bourne 1-3 are my favorite films and so at least I can remember the name.
 
 From Wikipedia:
 
@@ -190,7 +188,8 @@ MIT License, see LICENSE file
 
 The Unit-Tests do not mock any network-libraries, but depend on a small Express-application running.
 
-## Setup
+Run following commands before you start the JUnit-tests or skip the tests in Maven build with command line
+option `-DskipTests`
 
 ```
 cd src/test/api-test-server
@@ -198,9 +197,11 @@ npm install
 node .
 ```
 
-If you don't want to do this, just skip the tests in Maven build `-DskipTests`
+## Coverage
 
-And if you don't want to build the library, just take the jar from the `dist` folder.
+  * Class: 100%
+  * Method: 81%
+  * Line: 86%
 
 # TODO
 
@@ -213,5 +214,5 @@ And if you don't want to build the library, just take the jar from the `dist` fo
 
 Create an issue if you want to have one of those ideas implemented.
 
-## Documentation / Distribution
-  * Extend Tests, test against httpbin.org
+## Testing
+  * Test against httpbin.org
