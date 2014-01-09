@@ -136,8 +136,6 @@ if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
 
 # Maven Coordinates
 
-**Sorry, publishing to Maven Central unfortunately didn't work so far. Please download 1.0.0-SNAPSHOT from dist folder and stay tuned - it's on its way!**
-
 ```xml
 <dependency>
     <groupId>com.goebl</groupId>
@@ -149,6 +147,11 @@ if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
 Gradle
 
     'com.goebl:david-webb:1.0.0'
+
+Not using Maven/Gradle? - Then you can download the plain JAR from following links directly:
+
+ * [SNAPSHOT Versions](https://oss.sonatype.org/content/groups/staging/com/goebl/david-webb/)
+ * [RELEASE Versions](http://repo.maven.apache.org/maven2/com/goebl/david-webb/)
 
 # Background
 
