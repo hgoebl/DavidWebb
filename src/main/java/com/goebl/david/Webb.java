@@ -38,8 +38,8 @@ public class Webb {
     static final Map<String, Object> globalHeaders = new LinkedHashMap<String, Object>();
     static String globalBaseUri;
 
-    static int connectTimeout = 10000;
-    static int readTimeout = 60000;
+    static Integer connectTimeout;
+    static Integer readTimeout;
     static int jsonIndentFactor = -1;
 
     boolean followRedirects = false;
@@ -102,6 +102,26 @@ public class Webb {
      */
     public static void setJsonIndentFactor(int indentFactor) {
         Webb.jsonIndentFactor = indentFactor;
+    }
+
+    /**
+     * Set the timeout in milliseconds for connecting the server.
+     * <br/>
+     * Can be overwritten for each Request with {@link com.goebl.david.Request#connectTimeout(int)}.
+     * @param globalConnectTimeout the new timeout
+     */
+    public static void setConnectTimeout(int globalConnectTimeout) {
+        connectTimeout = globalConnectTimeout;
+    }
+
+    /**
+     * Set the timeout in milliseconds for getting response from the server.
+     * <br/>
+     * Can be overwritten for each Request with {@link com.goebl.david.Request#readTimeout(int)}.
+     * @param globalReadTimeout the new timeout
+     */
+    public static void setReadTimeout(int globalReadTimeout) {
+        readTimeout = globalReadTimeout;
     }
 
     /**
@@ -222,8 +242,7 @@ public class Webb {
             connection.setRequestMethod(request.method.name());
             connection.setInstanceFollowRedirects(followRedirects);
             connection.setUseCaches(request.useCaches);
-            connection.setConnectTimeout(request.connectTimeout != null ? request.connectTimeout : connectTimeout);
-            connection.setReadTimeout(request.readTimeout != null ? request.readTimeout : readTimeout);
+            setTimeouts(request, connection);
             if (request.ifModifiedSince != null) {
                 connection.setIfModifiedSince(request.ifModifiedSince);
             }
@@ -280,6 +299,17 @@ public class Webb {
             if (connection != null) {
                 try { connection.disconnect(); } catch (Exception ignored) {}
             }
+        }
+    }
+
+    private void setTimeouts(Request request, HttpURLConnection connection) {
+        if (request.connectTimeout != null || connectTimeout != null) {
+            connection.setConnectTimeout(
+                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);
+        }
+        if (request.readTimeout != null || readTimeout != null) {
+            connection.setReadTimeout(
+                    request.readTimeout != null ? request.readTimeout : readTimeout);
         }
     }
 
