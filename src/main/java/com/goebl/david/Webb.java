@@ -1,7 +1,6 @@
 package com.goebl.david;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.net.ssl.HostnameVerifier;
@@ -12,12 +11,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Lightweight Java HTTP-Client for calling JSON REST-Services (especially for Android).
@@ -31,6 +30,7 @@ public class Webb {
     public static final String APP_BINARY = Const.APP_BINARY;
     public static final String TEXT_PLAIN = Const.TEXT_PLAIN;
     public static final String HDR_CONTENT_TYPE = Const.HDR_CONTENT_TYPE;
+    public static final String HDR_CONTENT_ENCODING = Const.HDR_CONTENT_ENCODING;
     public static final String HDR_ACCEPT = Const.HDR_ACCEPT;
     public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
     public static final String HDR_AUTHORIZATION = "Authorization";
@@ -233,22 +233,19 @@ public class Webb {
                 WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);
             }
 
-            byte[] requestBody = null;
             if (request.method != Request.Method.GET && request.method != Request.Method.DELETE) {
-                requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, jsonIndentFactor);
-                if (requestBody != null) {
-                    connection.setDoOutput(true);
-                }
-            }
-
-            connection.connect();
-
-            // write the body (of course headers are written first by HUC)
-            if (requestBody != null) {
                 if (request.streamPayload) {
-                    streamBody(connection, request.payload);
+                    WebbUtils.setContentTypeAndLengthForStreaming(connection, request, request.compress);
+                    connection.setDoOutput(true);
+                    streamBody(connection, request.payload, request.compress);
                 } else {
-                    writeBody(connection, requestBody);
+                    byte[] requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(
+                            connection, request, request.compress, jsonIndentFactor);
+
+                    if (requestBody != null) {
+                        connection.setDoOutput(true);
+                        writeBody(connection, requestBody);
+                    }
                 }
             }
 
@@ -299,7 +296,7 @@ public class Webb {
         }
     }
 
-    private void streamBody(HttpURLConnection connection, Object body) throws IOException {
+    private void streamBody(HttpURLConnection connection, Object body, boolean compress) throws IOException {
         InputStream is;
         boolean closeStream;
 
@@ -314,6 +311,9 @@ public class Webb {
         OutputStream os = null;
         try {
             os = connection.getOutputStream();
+            if (compress) {
+                os = new GZIPOutputStream(os);
+            }
             WebbUtils.copyStream(is, os);
             os.flush();
         } finally {

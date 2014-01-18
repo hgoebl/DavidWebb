@@ -35,6 +35,7 @@ public class Request {
     Integer readTimeout;
     Long ifModifiedSince;
     boolean ensureSuccess;
+    boolean compress;
 
     Request(Webb webb, Method method, String uri) {
         this.webb = webb;
@@ -138,6 +139,24 @@ public class Request {
         }
         this.payload = body;
         this.streamPayload = body instanceof File || body instanceof InputStream;
+        return this;
+    }
+
+    /**
+     * Enable compression for uploaded data.<br/>
+     * <br/>
+     * Before you enable compression, you should find out, whether the web server you are talking to
+     * supports this. As compression has not to be implemented for HTTP and standard RFC2616 had only
+     * compression for downloaded resources in mind, in special cases it makes absolutely sense to
+     * compress the posted data.<br/>
+     * Your web application should inspect the 'Content-Encoding' header and implement the compression
+     * token provided by this client. By now only 'gzip' encoding token is used. If you need 'deflate'
+     * create an issue.
+     *
+     * @return <code>this</code> for method chaining (fluent API)
+     */
+    public Request compress() {
+        compress = true;
         return this;
     }
 

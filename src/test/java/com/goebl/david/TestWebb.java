@@ -257,6 +257,16 @@ public class TestWebb {
         assertEquals(201, response.getStatusCode());
     }
 
+    @Test public void uploadCompressed() throws Exception {
+        Response<Void> response = webb
+                .post("/upload-compressed")
+                .compress()
+                .body(TEST_FILE)
+                .asVoid();
+
+        assertEquals(201, response.getStatusCode());
+    }
+
     @Test public void httpsValidCertificate() throws Exception {
         webb.setBaseUri(null);
 

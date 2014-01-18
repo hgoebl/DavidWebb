@@ -2,7 +2,6 @@ package com.goebl.david;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -192,10 +191,10 @@ public class TestWebbUtils {
         request.params.put("email", "abc@def.com");
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertArrayEquals("abc=123&email=abc%40def.com".getBytes("UTF-8"), payload);
-        verify(connection).setFixedLengthStreamingMode((long) payload.length);
+        verify(connection).setFixedLengthStreamingMode(payload.length);
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_FORM);
     }
 
@@ -205,7 +204,7 @@ public class TestWebbUtils {
         request.payload = null;
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertNull(payload);
         verify(connection, never()).setFixedLengthStreamingMode(anyInt());
@@ -223,13 +222,13 @@ public class TestWebbUtils {
 
         request.payload = json;
 
-        byte[] expected = json.toString(0).getBytes("UTF-8");
+        byte[] expected = json.toString().getBytes("UTF-8");
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertArrayEquals(expected, payload);
-        verify(connection).setFixedLengthStreamingMode((long) expected.length);
+        verify(connection).setFixedLengthStreamingMode(expected.length);
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_JSON);
     }
 
@@ -243,14 +242,13 @@ public class TestWebbUtils {
         json.put("a string");
 
         request.payload = json;
-
-        byte[] expected = json.toString(0).getBytes("UTF-8");
+        byte[] expected = json.toString().getBytes("UTF-8");
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertArrayEquals(expected, payload);
-        verify(connection).setFixedLengthStreamingMode((long) expected.length);
+        verify(connection).setFixedLengthStreamingMode(expected.length);
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_JSON);
     }
 
@@ -262,10 +260,10 @@ public class TestWebbUtils {
         byte[] expected = strPayload.getBytes("UTF-8");
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertArrayEquals(expected, payload);
-        verify(connection).setFixedLengthStreamingMode((long) expected.length);
+        verify(connection).setFixedLengthStreamingMode(expected.length);
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);
     }
 
@@ -277,10 +275,10 @@ public class TestWebbUtils {
         byte[] expected = strPayload.getBytes("UTF-8");
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
-        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, -1);
+        byte[] payload = WebbUtils.getPayloadAsBytesAndSetContentType(connection, request, false, -1);
 
         assertArrayEquals(expected, payload);
-        verify(connection).setFixedLengthStreamingMode((long) expected.length);
+        verify(connection).setFixedLengthStreamingMode(expected.length);
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
     }
 

@@ -15,6 +15,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Static utility method and tools for HTTP traffic parsing and encoding.
@@ -188,56 +189,99 @@ public class WebbUtils {
     static byte[] getPayloadAsBytesAndSetContentType(
             HttpURLConnection connection,
             Request request,
+            boolean compress,
             int jsonIndentFactor) throws JSONException, UnsupportedEncodingException {
 
         byte[] requestBody = null;
         String bodyStr = null;
-        long length = 0L;
 
         if (request.params != null) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_FORM);
             bodyStr = WebbUtils.queryString(request.params);
         } else if (request.payload == null) {
-            requestBody = null;
+            return null;
         } else if (request.payload instanceof JSONObject) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
             bodyStr = jsonIndentFactor >= 0
                     ? ((JSONObject) request.payload).toString(jsonIndentFactor)
-                    : ((JSONObject) request.payload).toString(0);
+                    : request.payload.toString();
         } else if (request.payload instanceof JSONArray) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);
             bodyStr = jsonIndentFactor >= 0
                     ? ((JSONArray) request.payload).toString(jsonIndentFactor)
-                    : ((JSONArray) request.payload).toString(0);
+                    : request.payload.toString();
         } else if (request.payload instanceof byte[]) {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
             requestBody = (byte[]) request.payload;
-            length = requestBody.length;
-        } else if (request.payload instanceof File) {
-            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
-            requestBody = Const.EMPTY_BYTE_ARRAY;
-            length = ((File) request.payload).length();
-        } else if (request.payload instanceof InputStream) {
-            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
-            requestBody = Const.EMPTY_BYTE_ARRAY;
-            length = -1L;
         } else {
             WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);
             bodyStr = request.payload.toString();
         }
         if (bodyStr != null) {
             requestBody = bodyStr.getBytes(Const.UTF8);
-            length = requestBody.length;
         }
 
-        if (requestBody != null) {
-            if (length < 0) {
-                connection.setChunkedStreamingMode(-1); // use default chunk size
-            } else {
-                connection.setFixedLengthStreamingMode(length);
+        if (requestBody == null) {
+            throw new IllegalStateException();
+        }
+
+        // only compress if the new body is smaller than uncompressed body
+        if (compress && requestBody.length > Const.MIN_COMPRESSED_ADVANTAGE) {
+            byte[] compressedBody = gzip(requestBody);
+            if (requestBody.length - compressedBody.length > Const.MIN_COMPRESSED_ADVANTAGE) {
+                requestBody = compressedBody;
+                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, "gzip");
             }
         }
+
+        connection.setFixedLengthStreamingMode(requestBody.length);
+
         return requestBody;
+    }
+
+    static void setContentTypeAndLengthForStreaming(
+            HttpURLConnection connection,
+            Request request,
+            boolean compress) {
+
+        long length;
+
+        if (request.payload instanceof File) {
+            length = compress ? -1L : ((File) request.payload).length();
+        } else if (request.payload instanceof InputStream) {
+            length = -1L;
+        } else {
+            throw new IllegalStateException();
+        }
+
+        WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
+        if (length < 0) {
+            connection.setChunkedStreamingMode(-1); // use default chunk size
+            if (compress) {
+                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, "gzip");
+            }
+        } else {
+            connection.setFixedLengthStreamingMode(length);
+        }
+    }
+
+    static byte[] gzip(byte[] input) {
+        GZIPOutputStream gzipOS = null;
+        try {
+            ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();
+            gzipOS = new GZIPOutputStream(byteArrayOS);
+            gzipOS.write(input);
+            gzipOS.flush();
+            gzipOS.close();
+            gzipOS = null;
+            return byteArrayOS.toByteArray();
+        } catch (Exception e) {
+            throw new WebbException(e);
+        } finally {
+            if (gzipOS != null) {
+                try { gzipOS.close(); } catch (Exception ignored) {}
+            }
+        }
     }
 
     static <T> void parseResponseBody(Class<T> clazz, Response<T> response, byte[] responseBody)
