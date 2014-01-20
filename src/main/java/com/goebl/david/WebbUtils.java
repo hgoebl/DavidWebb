@@ -254,6 +254,10 @@ public class WebbUtils {
             throw new IllegalStateException();
         }
 
+        if (length > Integer.MAX_VALUE) {
+            length = -1L; // use chunked streaming mode
+        }
+
         WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
         if (length < 0) {
             connection.setChunkedStreamingMode(-1); // use default chunk size
@@ -261,7 +265,7 @@ public class WebbUtils {
                 connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, "gzip");
             }
         } else {
-            connection.setFixedLengthStreamingMode(length);
+            connection.setFixedLengthStreamingMode((int) length);
         }
     }
 
