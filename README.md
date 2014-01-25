@@ -31,6 +31,8 @@ lightweight (~16 KB jar) and super-easy to use.
   * org.json support (JSONObject, JSONArray) as payload in both directions (up/down)
   * wraps all Exceptions in a WebbException (a RuntimeException)
   * automatically sets many boiler-plate HTTP headers (like 'Accept', 'Content-Type', 'Content-Length')
+  * GZip-compression for uploads (POST/PUT)
+  * Un-compress gzip/deflate downloads
   * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
   * pass-through to "real" connection for special cases
 
@@ -135,6 +137,9 @@ if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
 ```
 
 # Maven Coordinates
+
+**ATTENTION: Version 1.0.0 has a nasty bug for Android devices < API 19! Don't use it - it is fixed
+together with other bugs in version 1.1.0-SNAPSHOT. Release 1.1.0 coming soon!**
 
 ```xml
 <dependency>

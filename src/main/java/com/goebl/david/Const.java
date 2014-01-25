@@ -11,6 +11,7 @@ class Const {
     static final String TEXT_PLAIN = "text/plain";
     static final String HDR_CONTENT_TYPE = "Content-Type";
     static final String HDR_CONTENT_ENCODING = "Content-Encoding";
+    static final String HDR_ACCEPT_ENCODING = "Accept-Encoding";
     static final String HDR_ACCEPT = "Accept";
     static final String HDR_USER_AGENT = "User-Agent";
     static final String UTF8 = "utf-8";

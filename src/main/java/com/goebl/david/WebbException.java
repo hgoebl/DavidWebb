@@ -7,8 +7,15 @@ package com.goebl.david;
  */
 public class WebbException extends RuntimeException {
 
+    private Response response;
+
     public WebbException(String message) {
         super(message);
+    }
+
+    public WebbException(String message, Response response) {
+        super(message);
+        this.response = response;
     }
 
     public WebbException(String message, Throwable cause) {
@@ -17,5 +24,15 @@ public class WebbException extends RuntimeException {
 
     public WebbException(Throwable cause) {
         super(cause);
+    }
+
+    /**
+     * Get the Response object
+     * (only available if exception has been raised by {@link com.goebl.david.Request#ensureSuccess()}.
+     *
+     * @return the <code>Response</code> object filled with error information like statusCode and errorBody.
+     */
+    public Response getResponse() {
+        return response;
     }
 }

@@ -13,6 +13,7 @@ public class Response<T> {
     int statusCode;
     String responseMessage;
     T body;
+    Object errorBody;
     HttpURLConnection connection;
 
     Response(Request request) {
@@ -40,6 +41,30 @@ public class Response<T> {
     }
 
     /**
+     * Get the body which was returned in case of error (HTTP-Code >= 400).
+     * <br/>
+     * The type of the error body depends on following factors:
+     * <ul>
+     *     <li>
+     *         <code>Content-Type</code> header (overrules the expected return type of the response)
+     *     </li>
+     *     <li>
+     *         The expected type (see <code>asXyz()</code>). We try to coerce the error body to this type.
+     *         In case of REST services, where often a JSONObject is the normal response body, the error body
+     *         will be converted to JSONObject if possible. <code>JSONArray</code> is not expected to be the
+     *         error body.
+     *     </li>
+     * </ul>
+     * If converting the error body is not successful, <code>String</code> and <code>byte[]</code> is used as
+     * a fallback. You have to check the type with <code>instanceof</code> or try/catch the cast.
+     * @return the error body converted to an object (see above) or <code>null</code> if there is no body or
+     *         no error.
+     */
+    public Object getErrorBody() {
+        return errorBody;
+    }
+
+    /**
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#responseCode">
      *     HttpURLConnection.responseCode</a>
      * @return An int representing the three digit HTTP Status-Code.
@@ -53,7 +78,7 @@ public class Response<T> {
      * @return first header
      */
     public String getStatusLine() {
-        return connection.getHeaderField(0);
+        return connection.getHeaderField(null);
     }
 
     /**
@@ -90,7 +115,7 @@ public class Response<T> {
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getDate()">
      *     URLConnection.getDate()</a>
      *
-     * @return the parsed "Date" header or <code>null</code> if this header was not set.
+     * @return the parsed "Date" header as millis or <code>0</code> if this header was not set.
      */
     public long getDate() {
         return connection.getDate();
@@ -178,7 +203,7 @@ public class Response<T> {
      */
     public void ensureSuccess() {
         if (!isSuccess()) {
-            throw new WebbException("Request failed: " + statusCode + " " + responseMessage);
+            throw new WebbException("Request failed: " + statusCode + " " + responseMessage, (Response) this);
         }
     }
 }

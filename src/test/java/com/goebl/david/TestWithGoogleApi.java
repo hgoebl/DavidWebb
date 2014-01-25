@@ -1,9 +1,8 @@
 package com.goebl.david;
 
+import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  * Real world testing a Google API.
@@ -11,7 +10,7 @@ import static org.junit.Assert.*;
  * @author goebl
  * @since 15.12.13
  */
-public class TestWithGoogleApi {
+public class TestWithGoogleApi extends TestCase {
 
     // this is a replacement for com.google.android.maps.GeoPoint
     private static class GeoPoint {
@@ -41,8 +40,7 @@ public class TestWithGoogleApi {
         }
     }
 
-    @Test
-    public void getDistance() throws Exception {
+    public void testGetDistance() throws Exception {
 
         GeoPoint src = new GeoPoint(47.8227, 12.096933);
         GeoPoint dest = new GeoPoint(47.8633, 12.215533);

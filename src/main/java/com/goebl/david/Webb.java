@@ -32,14 +32,15 @@ public class Webb {
     public static final String HDR_CONTENT_TYPE = Const.HDR_CONTENT_TYPE;
     public static final String HDR_CONTENT_ENCODING = Const.HDR_CONTENT_ENCODING;
     public static final String HDR_ACCEPT = Const.HDR_ACCEPT;
+    public static final String HDR_ACCEPT_ENCODING = Const.HDR_ACCEPT_ENCODING;
     public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
     public static final String HDR_AUTHORIZATION = "Authorization";
 
     static final Map<String, Object> globalHeaders = new LinkedHashMap<String, Object>();
     static String globalBaseUri;
 
-    static Integer connectTimeout;
-    static Integer readTimeout;
+    static Integer connectTimeout = 10000; // 10 seconds
+    static Integer readTimeout = 3 * 60000; // 5 minutes
     static int jsonIndentFactor = -1;
 
     boolean followRedirects = false;
@@ -107,21 +108,25 @@ public class Webb {
     /**
      * Set the timeout in milliseconds for connecting the server.
      * <br/>
+     * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 10 seconds, since no
+     * timeout is odd.<br/>
      * Can be overwritten for each Request with {@link com.goebl.david.Request#connectTimeout(int)}.
-     * @param globalConnectTimeout the new timeout
+     * @param globalConnectTimeout the new timeout or <code>&lt;= 0</code> to use HttpURLConnection default timeout.
      */
     public static void setConnectTimeout(int globalConnectTimeout) {
-        connectTimeout = globalConnectTimeout;
+        connectTimeout = globalConnectTimeout > 0 ? globalConnectTimeout : null;
     }
 
     /**
      * Set the timeout in milliseconds for getting response from the server.
      * <br/>
+     * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 3 minutes, since no
+     * timeout is odd.<br/>
      * Can be overwritten for each Request with {@link com.goebl.david.Request#readTimeout(int)}.
-     * @param globalReadTimeout the new timeout
+     * @param globalReadTimeout the new timeout or <code>&lt;= 0</code> to use HttpURLConnection default timeout.
      */
     public static void setReadTimeout(int globalReadTimeout) {
-        readTimeout = globalReadTimeout;
+        readTimeout = globalReadTimeout > 0 ? globalReadTimeout : null;
     }
 
     /**
@@ -266,21 +271,28 @@ public class Webb {
                         writeBody(connection, requestBody);
                     }
                 }
+            } else {
+                connection.connect();
             }
-
-            // get the response body (if any)
-            is = connection.getInputStream();
-            byte[] responseBody = WebbUtils.readBytes(is);
 
             response.connection = connection;
             response.statusCode = connection.getResponseCode();
             response.responseMessage = connection.getResponseMessage();
 
+            // get the response body (if any)
+            is = response.isSuccess() ? connection.getInputStream() : connection.getErrorStream();
+            is = WebbUtils.wrapStream(connection.getContentEncoding(), is);
+            byte[] responseBody = WebbUtils.readBytes(is);
+
+            if (response.isSuccess()) {
+                WebbUtils.parseResponseBody(clazz, response, responseBody);
+            } else {
+                WebbUtils.parseErrorResponse(clazz, response, responseBody);
+            }
+
             if (request.ensureSuccess) {
                 response.ensureSuccess();
             }
-
-            WebbUtils.parseResponseBody(clazz, response, responseBody);
 
             return response;
 
@@ -314,6 +326,12 @@ public class Webb {
     }
 
     private void writeBody(HttpURLConnection connection, byte[] body) throws IOException {
+        // Android StrictMode might complain about not closing the connection:
+        // "E/StrictMode﹕ A resource was acquired at attached stack trace but never released"
+        // It seems like some kind of bug in special devices (e.g. 4.0.4/Sony) but does not
+        // happen e.g. on 4.4.2/Moto G.
+        // Closing the stream in the try block might help sometimes (it's intermittently),
+        // but I don't want to deal with the IOException which can be thrown in close().
         OutputStream os = null;
         try {
             os = connection.getOutputStream();
@@ -338,6 +356,8 @@ public class Webb {
             closeStream = false;
         }
 
+        // "E/StrictMode﹕ A resource was acquired at attached stack trace but never released"
+        // see comments about this problem in #writeBody()
         OutputStream os = null;
         try {
             os = connection.getOutputStream();

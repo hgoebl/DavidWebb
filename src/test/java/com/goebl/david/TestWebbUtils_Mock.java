@@ -1,108 +1,29 @@
 package com.goebl.david;
 
+import junit.framework.TestCase;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class TestWebbUtils {
-    @Test
-    public void testQueryString() throws Exception {
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
+public class TestWebbUtils_Mock extends TestCase {
 
-        assertEquals("empty map", "", WebbUtils.queryString(map));
-
-        map.put("abc", 123);
-        assertEquals("simple single param", "abc=123", WebbUtils.queryString(map));
-
-        map.put("dumb param", Boolean.TRUE);
-        assertEquals("uri-encode param", "abc=123&dumb+param=true", WebbUtils.queryString(map));
-
-        map.clear();
-        map.put("email", "abc@abc.com");
-        assertEquals("uri-encode value", "email=abc%40abc.com", WebbUtils.queryString(map));
-    }
-
-    @Test
-    public void testUrlEncode() throws Exception {
-        assertEquals("", WebbUtils.urlEncode(""));
-        assertEquals("normal-ascii", WebbUtils.urlEncode("normal-ascii"));
-
-        // instead of '+' for space '%20' is valid as well; in case of problems adapt test
-        assertEquals("Hello%2FWorld+%26+Co.%3F", WebbUtils.urlEncode("Hello/World & Co.?"));
-        assertEquals("M%C3%BCnchen+1+Ma%C3%9F+10+%E2%82%AC", WebbUtils.urlEncode("München 1 Maß 10 €"));
-    }
-
-    @Test
-    public void testToJsonObject() throws Exception {
-        JSONObject jsonExpected = new JSONObject();
-        jsonExpected.put("int", 1);
-        jsonExpected.put("bool", true);
-        jsonExpected.put("str", "a string");
-        String jsonStr = jsonExpected.toString();
-
-        JSONObject json = WebbUtils.toJsonObject(jsonStr.getBytes("UTF-8"));
-
-        assertEquals(jsonExpected.toString(), json.toString());
-    }
-
-    @Test(expected = WebbException.class)
-    public void testToJsonObjectFail() throws Exception {
-        // JSONObject parser is very forgiving: without ',' it would get parsed - unbelievable!
-        JSONObject json = WebbUtils.toJsonObject("{in, valid: 'json object'}".getBytes("UTF-8"));
-        // System.out.println(json.toString());
-    }
-
-    @Test
-    public void testToJsonArray() throws Exception {
-        JSONArray jsonExpected = new JSONArray();
-        jsonExpected.put(1);
-        jsonExpected.put(true);
-        jsonExpected.put("a string");
-        String jsonStr = jsonExpected.toString();
-
-        JSONArray json = WebbUtils.toJsonArray(jsonStr.getBytes("UTF-8"));
-
-        assertEquals(jsonExpected.toString(), json.toString());
-    }
-
-    @Test(expected = WebbException.class)
-    public void testToJsonArrayFail() throws Exception {
-        JSONArray array = WebbUtils.toJsonArray("[in - valid, 'json! array]".getBytes("UTF-8"));
-        // System.out.println(array.toString());
-    }
-
-    @Test
-    public void testReadBytes() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 1024 * 2 + 100; ++i) {
-            sb.append(Character.valueOf((char) (i % 256)));
-        }
-        byte[] input = sb.toString().getBytes("UTF-8");
-        ByteArrayInputStream is = new ByteArrayInputStream(input);
-
-        byte[] read = WebbUtils.readBytes(is);
-        is.close();
-
-        assertArrayEquals(input, read);
-
-        assertNull("return null when is=null", WebbUtils.readBytes(null));
-    }
-
-    @Test
     public void testAddRequestProperties() throws Exception {
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -125,14 +46,12 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty("bool", "true");
     }
 
-    @Test
     public void testAddRequestProperties_Empty() throws Exception {
         HttpURLConnection connection = mock(HttpURLConnection.class);
         doThrow(new RuntimeException()).when(connection).addRequestProperty(anyString(), anyString());
         WebbUtils.addRequestProperties(connection, null);
     }
 
-    @Test
     public void testAddRequestProperty() throws Exception {
         HttpURLConnection connection = mock(HttpURLConnection.class);
 
@@ -142,22 +61,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty("name2", "value2");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testAddRequestProperty_valueNull() throws Exception {
-        WebbUtils.addRequestProperty(null, "name1", null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testAddRequestProperty_nameNull() throws Exception {
-        WebbUtils.addRequestProperty(null, null, "abc");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testAddRequestProperty_nameEmpty() throws Exception {
-        WebbUtils.addRequestProperty(null, "", "abc");
-    }
-
-    @Test
     public void testEnsureRequestProperty() throws Exception {
         Map<String,List<String>> headers = new HashMap<String, List<String>>();
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -168,21 +71,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty("name", "value");
     }
 
-    @Test
-    public void testGetRfc1123DateFormat() throws Exception {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
-        cal.set(2013, Calendar.DECEMBER, 24, 23, 59);
-        cal.set(Calendar.SECOND, 30);
-        cal.set(Calendar.MILLISECOND, 501);
-        Date date = cal.getTime();
-
-        DateFormat dateFormat = WebbUtils.getRfc1123DateFormat();
-        String formatted = dateFormat.format(date);
-
-        assertEquals("Tue, 24 Dec 2013 23:59:30 GMT", formatted);
-    }
-
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_Form() throws Exception {
         Request request = new Request(null, null, null);
         request.payload = null;
@@ -198,7 +86,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_FORM);
     }
 
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_null() throws Exception {
         Request request = new Request(null, null, null);
         request.payload = null;
@@ -211,7 +98,6 @@ public class TestWebbUtils {
         verify(connection, never()).addRequestProperty(eq(Const.HDR_CONTENT_TYPE), anyString());
     }
 
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_JSONObject() throws Exception {
         Request request = new Request(null, null, null);
 
@@ -232,7 +118,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_JSON);
     }
 
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_JSONArray() throws Exception {
         Request request = new Request(null, null, null);
 
@@ -252,7 +137,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_JSON);
     }
 
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_String() throws Exception {
         Request request = new Request(null, null, null);
         String strPayload = "\"München 1 Maß 10 €\"";
@@ -267,7 +151,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);
     }
 
-    @Test
     public void testGetPayloadAsBytesAndSetContentType_bytes() throws Exception {
         Request request = new Request(null, null, null);
         String strPayload = "\"München 1 Maß 10 €\"";
@@ -282,7 +165,6 @@ public class TestWebbUtils {
         verify(connection).addRequestProperty(Const.HDR_CONTENT_TYPE, Const.APP_BINARY);
     }
 
-    @Test
     public void testParseResponseBody() throws Exception {
         // String
         Response response = mock(Response.class);
@@ -304,4 +186,68 @@ public class TestWebbUtils {
         WebbUtils.parseResponseBody(Void.class, response, null);
         verify(response, never()).setBody(anyObject());
     }
+
+    public void testParseErrorBody() throws Exception {
+        Response response = mock(Response.class);
+        HttpURLConnection connection = mock(HttpURLConnection.class);
+        response.connection = connection;
+
+        String expected = "München 1 Maß 10 €";
+        byte[] payload = expected.getBytes("UTF-8");
+
+        // this call should not eat any of the getContentType() return values
+        WebbUtils.parseErrorResponse(String.class, null, null); // without NPE it's OK!
+        assertNull(response.errorBody);
+        when(connection.getContentType()).thenReturn(
+                Const.APP_BINARY, // 1
+                null,             // 2
+                Const.APP_JSON,   // 3
+                Const.APP_JSON,   // 4
+                "text/plain; charset=UTF-8");    // 5
+
+
+        // (1) we expect a byte[] and Content-Type = app/bin => should be byte[]
+        WebbUtils.parseErrorResponse(Const.BYTE_ARRAY_CLASS, response, payload);
+        assertNotNull(response.errorBody);
+        assertArrayEquals(payload, (byte[]) response.errorBody);
+        response.errorBody = null;
+
+        // (2) we expect a byte[] and Content-Type is null => should be byte[]
+        WebbUtils.parseErrorResponse(Const.BYTE_ARRAY_CLASS, response, payload);
+        assertNotNull(response.errorBody);
+        assertArrayEquals(payload, (byte[]) response.errorBody);
+        response.errorBody = null;
+
+        // (3) we expect a String and Content-Type is JSON => should be String
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("msg", expected);
+        payload = jsonObject.toString().getBytes(Const.UTF8);
+        WebbUtils.parseErrorResponse(String.class, response, payload);
+        assertNotNull(response.errorBody);
+        assertEquals(jsonObject.toString(), (String) response.errorBody);
+        response.errorBody = null;
+
+        // (4) we expect JSON and Content-Type is JSON => should return JSON
+        WebbUtils.parseErrorResponse(JSONObject.class, response, payload);
+        assertNotNull(response.errorBody);
+        assertEquals(JSONObject.class, response.errorBody.getClass());
+        assertEquals(jsonObject.toString(), ((JSONObject) response.errorBody).toString());
+        response.errorBody = null;
+
+        // (5) we expect JSON and Content-Type is text => should return String
+        WebbUtils.parseErrorResponse(JSONObject.class, response, payload);
+        assertNotNull(response.errorBody);
+        assertEquals(String.class, response.errorBody.getClass());
+        assertEquals(jsonObject.toString(), response.errorBody);
+    }
+
+    private void assertArrayEquals(byte[] expected, byte[] bytes) {
+        assertEquals("array length mismatch", expected.length, bytes.length);
+        for (int i = 0; i < expected.length; i++) {
+            if (expected[i] != bytes[i]) {
+                fail(String.format("array different at index %d expected: %d, is: %d", i, expected[i], bytes[i]));
+            }
+        }
+    }
+
 }

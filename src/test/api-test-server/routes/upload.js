@@ -18,7 +18,7 @@ module.exports = function registerRoutes(app) {
         req.on('error', function (err) {
             console.log(err);
             res.status(500);
-        })
+        });
     }
 
     app.post('/upload', rawTextBody, function (req, res) {
@@ -33,6 +33,11 @@ module.exports = function registerRoutes(app) {
 
     });
 
+    app.post('/echoText', rawTextBody, function (req, res) {
+        res.header('Content-Type', 'text/plain; charset=UTF-8');
+        res.send(200, req.rawTextBody);
+    });
+
     function rawBody(req, res, next) {
         var chunks = [];
 
@@ -45,6 +50,7 @@ module.exports = function registerRoutes(app) {
             var encoding = req.header('content-encoding');
 
             req.bodyLength = buffer.length;
+            // console.log('bodyLength=' + req.bodyLength);
 
             if (encoding && encoding.toLowerCase() === 'gzip') {
                 zlib.gunzip(buffer, function(err, decoded) {
@@ -64,9 +70,8 @@ module.exports = function registerRoutes(app) {
         req.on('error', function (err) {
             console.log(err);
             res.status(500);
-        })
+        });
     }
-
 
     app.post('/upload-compressed', rawBody, function (req, res) {
 
@@ -80,4 +85,16 @@ module.exports = function registerRoutes(app) {
 
     });
 
+    app.post('/echoBin', function (req, res) {
+        var encoding = req.param('force-content-encoding') || req.header('content-encoding');
+        if (encoding) {
+            res.header('content-encoding', encoding);
+        }
+
+        req.on('error', function (err) {
+            console.log(err);
+        });
+
+        req.pipe(res);
+    });
 };

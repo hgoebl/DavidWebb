@@ -1,9 +1,11 @@
 *.class
 *.log
 
+out
 target
 node_modules
+gen
 
 # IntelliJ IDEA files (the best IDE in case you don't know it)
 .idea
-*.iml
+# *.iml

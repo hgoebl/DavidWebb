@@ -134,8 +134,8 @@ public class Request {
      * @return <code>this</code> for method chaining (fluent API)
      */
     public Request body(Object body) {
-        if (method == Method.GET) {
-            throw new IllegalStateException("body not allowed for GET requests");
+        if (method == Method.GET || method == Method.DELETE) {
+            throw new IllegalStateException("body not allowed for request method " + method);
         }
         this.payload = body;
         this.streamPayload = body instanceof File || body instanceof InputStream;
@@ -163,6 +163,10 @@ public class Request {
     /**
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#useCaches">
      *     URLConnection.useCaches</a>
+     * <br/>
+     * If you don't want your requests delivered from a cache, you don't have to call this method,
+     * because <code>false</code> is the default.
+     *
      * @param useCaches If <code>true</code>, the protocol is allowed to use caching whenever it can.
      * @return <code>this</code> for method chaining (fluent API)
      */

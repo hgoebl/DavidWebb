@@ -15,7 +15,10 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 /**
  * Static utility method and tools for HTTP traffic parsing and encoding.
@@ -140,9 +143,9 @@ public class WebbUtils {
      */
     public static DateFormat getRfc1123DateFormat() {
         DateFormat format = new SimpleDateFormat(
-                "EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+                "EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
         format.setLenient(false);
-        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
         return format;
     }
 
@@ -288,6 +291,19 @@ public class WebbUtils {
         }
     }
 
+    static InputStream wrapStream(String contentEncoding, InputStream inputStream) throws IOException {
+        if (contentEncoding == null || "identity".equalsIgnoreCase(contentEncoding)) {
+            return inputStream;
+        }
+        if ("gzip".equalsIgnoreCase(contentEncoding)) {
+            return new GZIPInputStream(inputStream);
+        }
+        if ("deflate".equalsIgnoreCase(contentEncoding)) {
+            return new InflaterInputStream(inputStream, new Inflater(false), 512);
+        }
+        throw new WebbException("unsupported content-encoding: " + contentEncoding);
+    }
+
     static <T> void parseResponseBody(Class<T> clazz, Response<T> response, byte[] responseBody)
             throws UnsupportedEncodingException {
 
@@ -306,6 +322,40 @@ public class WebbUtils {
         } else if (clazz == JSONArray.class) {
             response.setBody(WebbUtils.toJsonArray(responseBody));
         }
+    }
+
+    static <T> void parseErrorResponse(Class<T> clazz, Response<T> response, byte[] responseBody)
+            throws UnsupportedEncodingException {
+
+        if (responseBody == null) {
+            return;
+        }
+
+        String contentType = response.connection.getContentType();
+        if (contentType == null || contentType.startsWith(Const.APP_BINARY) || clazz == Const.BYTE_ARRAY_CLASS) {
+            response.errorBody = responseBody;
+            return;
+        }
+
+        if (contentType.startsWith(Const.APP_JSON) && clazz == JSONObject.class) {
+            try {
+                response.errorBody = WebbUtils.toJsonObject(responseBody);
+                return;
+            } catch (Exception ignored) {
+                // ignored - was just a try!
+            }
+        }
+
+        // fallback to String if bytes are valid UTF-8 characters ...
+        try {
+            response.errorBody = new String(responseBody, Const.UTF8);
+            return;
+        } catch (Exception ignored) {
+            // ignored - was just a try!
+        }
+
+        // last fallback - return error object as byte[]
+        response.errorBody = responseBody;
     }
 
 }

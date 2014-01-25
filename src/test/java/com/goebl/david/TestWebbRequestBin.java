@@ -1,21 +1,12 @@
 package com.goebl.david;
 
+import junit.framework.TestCase;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import javax.net.ssl.*;
-import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.TimeZone;
+public class TestWebbRequestBin { /* extends TestCase {
 
-import static org.junit.Assert.*;
-
-public class TestWebbRequestBin {
-
-    @Ignore // only for manual, sporadic tests (uri is not stable)
-    @Test public void stackOverflow20543115() throws Exception {
+    // @Ignore // only for manual, sporadic tests (uri is not stable)
+    public void testStackOverflow20543115() throws Exception {
         Webb webb = Webb.create();
         webb.setBaseUri("http://requestb.in");
 
@@ -38,6 +29,6 @@ public class TestWebbRequestBin {
         String body = response.getBody();
         assertEquals("ok\n", body);
     }
-
+    */
 }
 
