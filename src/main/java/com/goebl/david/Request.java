@@ -34,6 +34,7 @@ public class Request {
     Integer connectTimeout;
     Integer readTimeout;
     Long ifModifiedSince;
+    Boolean followRedirects;
     boolean ensureSuccess;
     boolean compress;
 
@@ -41,6 +42,7 @@ public class Request {
         this.webb = webb;
         this.method = method;
         this.uri = uri;
+        this.followRedirects = webb.followRedirects;
     }
 
     /**
@@ -207,6 +209,21 @@ public class Request {
      */
     public Request readTimeout(int readTimeout) {
         this.readTimeout = readTimeout;
+        return this;
+    }
+
+    /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)">
+     *     </a>.
+     * <br/>
+     * Use this method to set the behaviour for this single request when receiving redirect responses.
+     * If you want to change the behaviour for all your requests, call {@link Webb#setFollowRedirects(boolean)}.
+     * @param auto <code>true</code> to automatically follow redirects (HTTP status code 3xx).
+     *             Default value comes from HttpURLConnection and should be <code>true</code>.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
+    public Request followRedirects(boolean auto) {
+        this.followRedirects = auto;
         return this;
     }
 

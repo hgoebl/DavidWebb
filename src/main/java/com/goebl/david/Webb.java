@@ -43,7 +43,7 @@ public class Webb {
     static Integer readTimeout = 3 * 60000; // 5 minutes
     static int jsonIndentFactor = -1;
 
-    boolean followRedirects = false;
+    Boolean followRedirects;
     String baseUri;
     Map<String, Object> defaultHeaders;
     SSLSocketFactory sslSocketFactory;
@@ -130,6 +130,19 @@ public class Webb {
     }
 
     /**
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)">
+     *     </a>.
+     * <br/>
+     * Use this method to set the behaviour for all requests created by this instance when receiving redirect responses.
+     * You can overwrite the setting for a single request by calling {@link Request#followRedirects(boolean)}.
+     * @param auto <code>true</code> to automatically follow redirects (HTTP status code 3xx).
+     *             Default value comes from HttpURLConnection and should be <code>true</code>.
+     */
+    public void setFollowRedirects(boolean auto) {
+        this.followRedirects = auto;
+    }
+
+    /**
      * Set a custom {@link javax.net.ssl.SSLSocketFactory}, most likely to relax Certification checking.
      * @param sslSocketFactory the factory to use (see test cases for an example).
      */
@@ -186,7 +199,8 @@ public class Webb {
 
     /**
      * Creates a <b>GET HTTP</b> request with the specified absolute or relative URI.
-     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking).
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request get(String pathOrUri) {
@@ -196,6 +210,7 @@ public class Webb {
     /**
      * Creates a <b>POST</b> HTTP request with the specified absolute or relative URI.
      * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request post(String pathOrUri) {
@@ -205,6 +220,7 @@ public class Webb {
     /**
      * Creates a <b>PUT</b> HTTP request with the specified absolute or relative URI.
      * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request put(String pathOrUri) {
@@ -214,6 +230,7 @@ public class Webb {
     /**
      * Creates a <b>DELETE</b> HTTP request with the specified absolute or relative URI.
      * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request delete(String pathOrUri) {
@@ -221,6 +238,12 @@ public class Webb {
     }
 
     private String buildPath(String pathOrUri) {
+        if (pathOrUri == null) {
+            throw new IllegalArgumentException("pathOrUri must not be null");
+        }
+        if (pathOrUri.startsWith("http://") || pathOrUri.startsWith("https://")) {
+            return pathOrUri;
+        }
         String myBaseUri = baseUri != null ? baseUri : globalBaseUri;
         return myBaseUri == null ? pathOrUri : myBaseUri + pathOrUri;
     }
@@ -230,7 +253,6 @@ public class Webb {
 
         InputStream is = null;
         HttpURLConnection connection = null;
-        HttpURLConnection.setFollowRedirects(followRedirects);
 
         try {
             String uri = request.uri;
@@ -245,7 +267,9 @@ public class Webb {
 
             prepareSslConnection(connection);
             connection.setRequestMethod(request.method.name());
-            connection.setInstanceFollowRedirects(followRedirects);
+            if (request.followRedirects != null) {
+                connection.setInstanceFollowRedirects(request.followRedirects);
+            }
             connection.setUseCaches(request.useCaches);
             setTimeouts(request, connection);
             if (request.ifModifiedSince != null) {

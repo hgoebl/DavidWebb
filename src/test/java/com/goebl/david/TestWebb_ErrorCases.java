@@ -22,6 +22,15 @@ public class TestWebb_ErrorCases extends AbstractTestWebb {
         }
     }
 
+    public void testUriNull() throws Exception {
+        try {
+            webb.get(null).asVoid();
+            fail();
+        } catch (IllegalArgumentException expected) {
+            // body with get is not allowed
+        }
+    }
+
     public void testError404NoContent() throws Exception {
         Response<String> response = webb
                 .get("/error/404")

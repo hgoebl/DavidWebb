@@ -6,8 +6,6 @@ import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-// TODO test redirect (follow redirect true/false)
-// TODO express res.location and res.redirect
 // TODO express res.charset = "value" => Content-Type: text/html; charset=value
 
 public class TestWebb extends AbstractTestWebb {
@@ -32,6 +30,10 @@ public class TestWebb extends AbstractTestWebb {
         assertEquals(connection.getResponseCode(), response.getStatusCode());
 
         assertSame(request, response.getRequest());
+    }
+
+    public void testIgnoreBaseUri() throws Exception {
+        webb.get("http://www.goebl.com/robots.txt").ensureSuccess().asVoid();
     }
 
     public void testSimpleGetText() throws Exception {
@@ -124,7 +126,7 @@ public class TestWebb extends AbstractTestWebb {
         assertEquals(201, response.getStatusCode());
         assertTrue(response.isSuccess());
         assertEquals("Created", response.getResponseMessage());
-        assertEquals("http://example.com/4711", response.getHeaderField("Link"));
+        assertEquals("http://example.com/4711", response.getHeaderField("Location"));
     }
 
     public void testSimpleDelete() throws Exception {

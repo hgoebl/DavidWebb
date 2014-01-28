@@ -22,7 +22,10 @@
           <root url="jar://$MODULE_DIR$/libs/david-webb-tests.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../main/java" />
+          <root url="file://$MODULE_DIR$/../java" />
+        </SOURCES>
       </library>
     </orderEntry>
   </component>

@@ -17,6 +17,7 @@ module.exports = function registerRoutes(app) {
     require('./error-cases.js')(app);
     require('./timeouts.js')(app);
     require('./headers.js')(app);
+    require('./redirect.js')(app);
     require('./upload.js')(app);
     require('./compressed.js')(app);
 };

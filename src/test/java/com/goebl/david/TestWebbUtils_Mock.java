@@ -24,6 +24,13 @@ import static org.mockito.Mockito.when;
 
 public class TestWebbUtils_Mock extends TestCase {
 
+    private Webb webb;
+
+    public void setUp() throws Exception {
+        super.setUp();
+        webb = Webb.create(); // not necessary to mock this
+    }
+
     public void testAddRequestProperties() throws Exception {
         Date now = new Date();
         Calendar calendar = Calendar.getInstance();
@@ -72,7 +79,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_Form() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
         request.payload = null;
         request.params = new LinkedHashMap<String, Object>();
         request.params.put("abc", 123);
@@ -87,7 +94,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_null() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
         request.payload = null;
 
         HttpURLConnection connection = mock(HttpURLConnection.class);
@@ -99,7 +106,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_JSONObject() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
 
         JSONObject json = new JSONObject();
         json.put("int", 1);
@@ -119,7 +126,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_JSONArray() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
 
         JSONArray json = new JSONArray();
         json.put(1);
@@ -138,7 +145,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_String() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
         String strPayload = "\"München 1 Maß 10 €\"";
         request.payload = strPayload;
         byte[] expected = strPayload.getBytes("UTF-8");
@@ -152,7 +159,7 @@ public class TestWebbUtils_Mock extends TestCase {
     }
 
     public void testGetPayloadAsBytesAndSetContentType_bytes() throws Exception {
-        Request request = new Request(null, null, null);
+        Request request = new Request(webb, null, null);
         String strPayload = "\"München 1 Maß 10 €\"";
         request.payload = strPayload.getBytes("UTF-8");
         byte[] expected = strPayload.getBytes("UTF-8");

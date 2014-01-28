@@ -17,7 +17,7 @@ module.exports = function registerRoutes(app) {
     });
 
     app.post('/simple.json', function (req, res) {
-        res.status(201).header("Link", "http://example.com/4711").send();
+        res.status(201).location('http://example.com/4711').send();
     });
 
     app.put('/simple.json', function (req, res) {

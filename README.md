@@ -131,7 +131,7 @@ If you want to see more examples, just have a look at the JUnit TestCase (src/te
 You should add this if you build for legacy Android devices:
 
 ```java
-if (Integer.parseInt(Build.VERSION.SDK) < Build.VERSION_CODES.FROYO) {
+if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
     System.setProperty("http.keepAlive", "false");
 }
 ```
@@ -164,14 +164,23 @@ Not using Maven/Gradle? - Then you can download the plain JAR from following lin
 
 If **DavidWebb** is too lightweight and you're missing features, you can have a look at:
 
+  * [basic-http-client](https://code.google.com/p/basic-http-client/)
+    Basic HTTP client w/ Android AsyncTask wrapper
   * [RESTDroid](https://github.com/PCreations/RESTDroid)
+    Resource oriented REST client for Android
   * [RoboSpice](https://github.com/octo-online/robospice)
+    RoboSpice is a modular android library that makes writing asynchronous network requests easy!
   * [android-rest-client](https://github.com/darko1002001/android-rest-client)
+    A simple rest API client library
   * [unirest](http://unirest.io/)
+    Lightweight HTTP Request Library
   * [Restlet Framework](http://restlet.org/)
+    The leading web API framework for Java
   * [Volley](https://android.googlesource.com/platform/frameworks/volley) and
     [Volley Example](http://www.technotalkative.com/android-volley-library-example/)
-  * [DataDroid](http://datadroid.foxykeep.com/) - an Android library for Data Management
+    IMHO: Probably quite good, but where's the documentation?
+  * [DataDroid](http://datadroid.foxykeep.com/)
+    - an Android library for Data Management
   * [More Alternatives (on RoboSpice)](https://github.com/octo-online/robospice#alternatives-to-robospice-)
   * (tell me if I missed your award-winning REST-client library!)
 
