@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Request.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Request.java</span></div><h1>Request.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Builder for an HTTP request.
+ * &lt;br/&gt;
+ * You can some &quot;real-life&quot; usage examples at
+ * &lt;a href=&quot;https://github.com/hgoebl/DavidWebb&quot;&gt;github.com/hgoebl/DavidWebb&lt;/a&gt;.
+ * &lt;br/&gt;
+ *
+ * @author hgoebl
+ */
+public class Request {
+<span class="pc" id="L21">    public enum Method {</span>
+<span class="fc" id="L22">        GET, POST, PUT, DELETE</span>
+    }
+
+    private final Webb webb;
+    final Method method;
+    final String uri;
+
+    Map&lt;String, Object&gt; params;
+    Map&lt;String, Object&gt; headers;
+    Object payload;
+    boolean streamPayload;
+    boolean useCaches;
+    Integer connectTimeout;
+    Integer readTimeout;
+    Long ifModifiedSince;
+    Boolean followRedirects;
+    boolean ensureSuccess;
+    boolean compress;
+
+<span class="fc" id="L41">    Request(Webb webb, Method method, String uri) {</span>
+<span class="fc" id="L42">        this.webb = webb;</span>
+<span class="fc" id="L43">        this.method = method;</span>
+<span class="fc" id="L44">        this.uri = uri;</span>
+<span class="fc" id="L45">        this.followRedirects = webb.followRedirects;</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Set (or overwrite) a parameter.
+     * &lt;br/&gt;
+     * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
+     * with MIME-type &lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;,
+     * @param name the name of the parameter (it's better to use only contain ASCII characters)
+     * @param value the value of the parameter; &lt;code&gt;null&lt;/code&gt; will be converted to empty string, for all other
+     *              objects to &lt;code&gt;toString()&lt;/code&gt; method converts it to String
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request param(String name, Object value) {
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (params == null) {</span>
+<span class="fc" id="L60">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+        }
+<span class="fc" id="L62">        params.put(name, value);</span>
+<span class="fc" id="L63">        return this;</span>
+    }
+
+    /**
+     * Set (or overwrite) a HTTP header value.
+     * &lt;br/&gt;
+     * Setting a header this way has the highest precedence and overrides a header value set on a {@link Webb}
+     * instance ({@link Webb#setDefaultHeader(String, Object)}) or a global header
+     * ({@link Webb#setGlobalHeader(String, Object)}).
+     * &lt;br/&gt;
+     * Using &lt;code&gt;null&lt;/code&gt; or empty String is not allowed for name and value.
+     *
+     * @param name name of the header (HTTP-headers are not case-sensitive, but if you want to override your own
+     *             headers, you have to use identical strings for the name. There are some frequently used header
+     *             names as constants in {@link Webb}, see HDR_xxx.
+     * @param value the value for the header. Following types are supported, all other types use &lt;code&gt;toString&lt;/code&gt;
+     *              of the given object:
+     *              &lt;ul&gt;
+     *              &lt;li&gt;{@link java.util.Date} is converted to RFC1123 compliant String&lt;/li&gt;
+     *              &lt;li&gt;{@link java.util.Calendar} is converted to RFC1123 compliant String&lt;/li&gt;
+     *              &lt;/ul&gt;
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request header(String name, Object value) {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (headers == null) {</span>
+<span class="fc" id="L88">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+        }
+<span class="fc" id="L90">        headers.put(name, value);</span>
+<span class="fc" id="L91">        return this;</span>
+    }
+
+    /**
+     * Set the payload for the request.
+     * &lt;br/&gt;
+     * Using this method together with {@link #param(String, Object)} has the effect of &lt;code&gt;body&lt;/code&gt; being
+     * ignored without notice. The method can be called more than once: the value will be stored and converted
+     * to bytes later.
+     * &lt;br/&gt;
+     * Following types are supported for the body:
+     * &lt;ul&gt;
+     *     &lt;li&gt;
+     *         &lt;code&gt;null&lt;/code&gt; clears the body
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         {@link org.json.JSONObject}, HTTP header 'Content-Type' will be set to JSON, if not set
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         {@link org.json.JSONArray}, HTTP header 'Content-Type' will be set to JSON, if not set
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         {@link java.lang.String}, HTTP header 'Content-Type' will be set to TEXT, if not set;
+     *         Text will be converted to UTF-8 bytes.
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         &lt;code&gt;byte[]&lt;/code&gt; the easiest way for DavidWebb - it's just passed through.
+     *         HTTP header 'Content-Type' will be set to BINARY, if not set.
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         {@link java.io.File}, HTTP header 'Content-Type' will be set to BINARY, if not set;
+     *         The file gets streamed to the web-server and 'Content-Length' will be set to the number
+     *         of bytes of the file. There is absolutely no conversion done. So if you want to upload
+     *         e.g. a text-file and convert it to another encoding than stored on disk, you have to do
+     *         it by yourself.
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         {@link java.io.InputStream}, HTTP header 'Content-Type' will be set to BINARY, if not set;
+     *         Similar to &lt;code&gt;File&lt;/code&gt;. Content-Length cannot be set (which has some drawbacks compared
+     *         to knowing the size of the body in advance).&lt;br/&gt;
+     *         &lt;strong&gt;You have to care for closing the stream!&lt;/strong&gt;
+     *     &lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param body the payload
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request body(Object body) {
+<span class="fc bfc" id="L139" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
+<span class="fc" id="L140">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
+        }
+<span class="fc" id="L142">        this.payload = body;</span>
+<span class="fc bfc" id="L143" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
+<span class="fc" id="L144">        return this;</span>
+    }
+
+    /**
+     * Enable compression for uploaded data.&lt;br/&gt;
+     * &lt;br/&gt;
+     * Before you enable compression, you should find out, whether the web server you are talking to
+     * supports this. As compression has not to be implemented for HTTP and standard RFC2616 had only
+     * compression for downloaded resources in mind, in special cases it makes absolutely sense to
+     * compress the posted data.&lt;br/&gt;
+     * Your web application should inspect the 'Content-Encoding' header and implement the compression
+     * token provided by this client. By now only 'gzip' encoding token is used. If you need 'deflate'
+     * create an issue.
+     *
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request compress() {
+<span class="fc" id="L161">        compress = true;</span>
+<span class="fc" id="L162">        return this;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#useCaches&quot;&gt;
+     *     URLConnection.useCaches&lt;/a&gt;
+     * &lt;br/&gt;
+     * If you don't want your requests delivered from a cache, you don't have to call this method,
+     * because &lt;code&gt;false&lt;/code&gt; is the default.
+     *
+     * @param useCaches If &lt;code&gt;true&lt;/code&gt;, the protocol is allowed to use caching whenever it can.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request useCaches(boolean useCaches) {
+<span class="fc" id="L176">        this.useCaches = useCaches;</span>
+<span class="fc" id="L177">        return this;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setIfModifiedSince(long)&quot;&gt;
+     *     URLConnection.setIfModifiedSince()&lt;/a&gt;
+     * @param ifModifiedSince A nonzero value gives a time as the number of milliseconds since January 1, 1970, GMT.
+     *                        The object is fetched only if it has been modified more recently than that time.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request ifModifiedSince(long ifModifiedSince) {
+<span class="fc" id="L188">        this.ifModifiedSince = ifModifiedSince;</span>
+<span class="fc" id="L189">        return this;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setConnectTimeout(int)&quot;&gt;
+     *     URLConnection.setConnectTimeout&lt;/a&gt;
+     * @param connectTimeout sets a specified timeout value, in milliseconds. &lt;code&gt;0&lt;/code&gt; means infinite timeout.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request connectTimeout(int connectTimeout) {
+<span class="fc" id="L199">        this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L200">        return this;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#setReadTimeout(int)&quot;&gt;
+     *     &lt;/a&gt;
+     * @param readTimeout Sets the read timeout to a specified timeout, in milliseconds.
+     *                    &lt;code&gt;0&lt;/code&gt; means infinite timeout.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request readTimeout(int readTimeout) {
+<span class="fc" id="L211">        this.readTimeout = readTimeout;</span>
+<span class="fc" id="L212">        return this;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)&quot;&gt;
+     *     &lt;/a&gt;.
+     * &lt;br/&gt;
+     * Use this method to set the behaviour for this single request when receiving redirect responses.
+     * If you want to change the behaviour for all your requests, call {@link Webb#setFollowRedirects(boolean)}.
+     * @param auto &lt;code&gt;true&lt;/code&gt; to automatically follow redirects (HTTP status code 3xx).
+     *             Default value comes from HttpURLConnection and should be &lt;code&gt;true&lt;/code&gt;.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request followRedirects(boolean auto) {
+<span class="fc" id="L226">        this.followRedirects = auto;</span>
+<span class="fc" id="L227">        return this;</span>
+    }
+
+    /**
+     * By calling this method, the HTTP status code is checked and a &lt;code&gt;WebbException&lt;/code&gt; is thrown if
+     * the status code is not something like 2xx.&lt;br/&gt;
+     * &lt;br/&gt;
+     * Be careful! If you request resources e.g. with {@link #ifModifiedSince(long)}, an exception will also be
+     * thrown in the positive case of &lt;code&gt;304 Not Modified&lt;/code&gt;.
+     *
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request ensureSuccess() {
+<span class="fc" id="L240">        this.ensureSuccess = true;</span>
+<span class="fc" id="L241">        return this;</span>
+    }
+
+    /**
+     * Execute the request and expect the result to be convertible to &lt;code&gt;String&lt;/code&gt;.
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;String&lt;/code&gt;
+     */
+    public Response&lt;String&gt; asString() {
+<span class="fc" id="L249">        return webb.execute(this, String.class);</span>
+    }
+
+    /**
+     * Execute the request and expect the result to be convertible to &lt;code&gt;JSONObject&lt;/code&gt;.
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONObject&lt;/code&gt;
+     */
+    public Response&lt;JSONObject&gt; asJsonObject() {
+<span class="fc" id="L257">        return webb.execute(this, JSONObject.class);</span>
+    }
+
+    /**
+     * Execute the request and expect the result to be convertible to &lt;code&gt;JSONArray&lt;/code&gt;.
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONArray&lt;/code&gt;
+     */
+    public Response&lt;JSONArray&gt; asJsonArray() {
+<span class="fc" id="L265">        return webb.execute(this, JSONArray.class);</span>
+    }
+
+    /**
+     * Execute the request and expect the result to be convertible to &lt;code&gt;byte[]&lt;/code&gt;.
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;byte[]&lt;/code&gt;
+     */
+    public Response&lt;byte[]&gt; asBytes() {
+<span class="fc" id="L273">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
+    }
+
+    /**
+     * Execute the request and expect no result payload (only status-code and headers).
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
+     */
+    public Response&lt;Void&gt; asVoid() {
+<span class="fc" id="L281">        return webb.execute(this, Void.class);</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>

@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Webb.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Webb.java</span></div><h1>Webb.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.zip.GZIPOutputStream;
+
+/**
+ * Lightweight Java HTTP-Client for calling JSON REST-Services (especially for Android).
+ *
+ * @author hgoebl
+ */
+public class Webb {
+    public static final String DEFAULT_USER_AGENT = Const.DEFAULT_USER_AGENT;
+    public static final String APP_FORM = Const.APP_FORM;
+    public static final String APP_JSON = Const.APP_JSON;
+    public static final String APP_BINARY = Const.APP_BINARY;
+    public static final String TEXT_PLAIN = Const.TEXT_PLAIN;
+    public static final String HDR_CONTENT_TYPE = Const.HDR_CONTENT_TYPE;
+    public static final String HDR_CONTENT_ENCODING = Const.HDR_CONTENT_ENCODING;
+    public static final String HDR_ACCEPT = Const.HDR_ACCEPT;
+    public static final String HDR_ACCEPT_ENCODING = Const.HDR_ACCEPT_ENCODING;
+    public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
+    public static final String HDR_AUTHORIZATION = &quot;Authorization&quot;;
+
+<span class="fc" id="L39">    static final Map&lt;String, Object&gt; globalHeaders = new LinkedHashMap&lt;String, Object&gt;();</span>
+    static String globalBaseUri;
+
+<span class="fc" id="L42">    static Integer connectTimeout = 10000; // 10 seconds</span>
+<span class="fc" id="L43">    static Integer readTimeout = 3 * 60000; // 5 minutes</span>
+<span class="fc" id="L44">    static int jsonIndentFactor = -1;</span>
+
+    Boolean followRedirects;
+    String baseUri;
+    Map&lt;String, Object&gt; defaultHeaders;
+    SSLSocketFactory sslSocketFactory;
+    HostnameVerifier hostnameVerifier;
+
+<span class="fc" id="L52">    private Webb() {}</span>
+
+    /**
+     * Create an instance which can be reused for multiple requests in the same Thread.
+     * @return the created instance.
+     */
+    public static Webb create() {
+<span class="fc" id="L59">        return new Webb();</span>
+    }
+
+    /**
+     * Set the value for a named header which is valid for all requests in the running JVM.
+     * &lt;br/&gt;
+     * The value can be overwritten by calling {@link Webb#setDefaultHeader(String, Object)} and/or
+     * {@link com.goebl.david.Request#header(String, Object)}.
+     * &lt;br/&gt;
+     * For the supported types for values see {@link Request#header(String, Object)}.
+     *
+     * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
+     * @param value value of the header. If &lt;code&gt;null&lt;/code&gt; the header value is cleared (effectively not set).
+     *
+     * @see #setDefaultHeader(String, Object)
+     * @see com.goebl.david.Request#header(String, Object)
+     */
+    public static void setGlobalHeader(String name, Object value) {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (value != null) {</span>
+<span class="fc" id="L78">            globalHeaders.put(name, value);</span>
+        } else {
+<span class="nc" id="L80">            globalHeaders.remove(name);</span>
+        }
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * Set the base URI for all requests starting in this JVM from now.
+     * &lt;br/&gt;
+     * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
+     * the URIs relatively. The value is only taken when {@link Webb#setBaseUri(String)} is not called or
+     * called with &lt;code&gt;null&lt;/code&gt;.
+     *
+     * @param globalBaseUri the prefix for all URIs of new Requests.
+     * @see #setBaseUri(String)
+     */
+    public static void setGlobalBaseUri(String globalBaseUri) {
+<span class="nc" id="L95">        Webb.globalBaseUri = globalBaseUri;</span>
+<span class="nc" id="L96">    }</span>
+
+    /**
+     * The number of characters to indent child properties, &lt;code&gt;-1&lt;/code&gt; for &quot;productive&quot; code.
+     * &lt;br&gt;
+     * Default is production ready JSON (-1) means no indentation (single-line serialization).
+     * @param indentFactor the number of spaces to indent
+     */
+    public static void setJsonIndentFactor(int indentFactor) {
+<span class="nc" id="L105">        Webb.jsonIndentFactor = indentFactor;</span>
+<span class="nc" id="L106">    }</span>
+
+    /**
+     * Set the timeout in milliseconds for connecting the server.
+     * &lt;br/&gt;
+     * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 10 seconds, since no
+     * timeout is odd.&lt;br/&gt;
+     * Can be overwritten for each Request with {@link com.goebl.david.Request#connectTimeout(int)}.
+     * @param globalConnectTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
+     */
+    public static void setConnectTimeout(int globalConnectTimeout) {
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        connectTimeout = globalConnectTimeout &gt; 0 ? globalConnectTimeout : null;</span>
+<span class="fc" id="L118">    }</span>
+
+    /**
+     * Set the timeout in milliseconds for getting response from the server.
+     * &lt;br/&gt;
+     * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 3 minutes, since no
+     * timeout is odd.&lt;br/&gt;
+     * Can be overwritten for each Request with {@link com.goebl.david.Request#readTimeout(int)}.
+     * @param globalReadTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
+     */
+    public static void setReadTimeout(int globalReadTimeout) {
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        readTimeout = globalReadTimeout &gt; 0 ? globalReadTimeout : null;</span>
+<span class="fc" id="L130">    }</span>
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)&quot;&gt;
+     *     &lt;/a&gt;.
+     * &lt;br/&gt;
+     * Use this method to set the behaviour for all requests created by this instance when receiving redirect responses.
+     * You can overwrite the setting for a single request by calling {@link Request#followRedirects(boolean)}.
+     * @param auto &lt;code&gt;true&lt;/code&gt; to automatically follow redirects (HTTP status code 3xx).
+     *             Default value comes from HttpURLConnection and should be &lt;code&gt;true&lt;/code&gt;.
+     */
+    public void setFollowRedirects(boolean auto) {
+<span class="fc" id="L142">        this.followRedirects = auto;</span>
+<span class="fc" id="L143">    }</span>
+
+    /**
+     * Set a custom {@link javax.net.ssl.SSLSocketFactory}, most likely to relax Certification checking.
+     * @param sslSocketFactory the factory to use (see test cases for an example).
+     */
+    public void setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
+<span class="fc" id="L150">        this.sslSocketFactory = sslSocketFactory;</span>
+<span class="fc" id="L151">    }</span>
+
+    /**
+     * Set a custom {@link javax.net.ssl.HostnameVerifier}, most likely to relax host-name checking.
+     * @param hostnameVerifier the verifier (see test cases for an example).
+     */
+    public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
+<span class="fc" id="L158">        this.hostnameVerifier = hostnameVerifier;</span>
+<span class="fc" id="L159">    }</span>
+
+    /**
+     * Set the base URI for all requests created from this instance.
+     * &lt;br/&gt;
+     * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
+     * the URIs relatively. The value takes precedence over the value set in {@link #setGlobalBaseUri(String)}.
+     *
+     * @param baseUri the prefix for all URIs of new Requests.
+     * @see #setGlobalBaseUri(String)
+     */
+    public void setBaseUri(String baseUri) {
+<span class="fc" id="L171">        this.baseUri = baseUri;</span>
+<span class="fc" id="L172">    }</span>
+
+    /**
+     * Set the value for a named header which is valid for all requests created by this instance.
+     * &lt;br/&gt;
+     * The value takes precedence over {@link Webb#setGlobalHeader(String, Object)} but can be overwritten by
+     * {@link com.goebl.david.Request#header(String, Object)}.
+     * &lt;br/&gt;
+     * For the supported types for values see {@link Request#header(String, Object)}.
+     *
+     * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
+     * @param value value of the header. If &lt;code&gt;null&lt;/code&gt; the header value is cleared (effectively not set).
+     *              When setting the value to null, a value from global headers can shine through.
+     *
+     * @see #setGlobalHeader(String, Object)
+     * @see com.goebl.david.Request#header(String, Object)
+     */
+    public void setDefaultHeader(String name, Object value) {
+<span class="nc bnc" id="L190" title="All 2 branches missed.">        if (defaultHeaders == null) {</span>
+<span class="nc" id="L191">            defaultHeaders = new HashMap&lt;String, Object&gt;();</span>
+        }
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L194">            defaultHeaders.remove(name);</span>
+        } else {
+<span class="nc" id="L196">            defaultHeaders.put(name, value);</span>
+        }
+<span class="nc" id="L198">    }</span>
+
+    /**
+     * Creates a &lt;b&gt;GET HTTP&lt;/b&gt; request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking).
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
+    public Request get(String pathOrUri) {
+<span class="fc" id="L207">        return new Request(this, Request.Method.GET, buildPath(pathOrUri));</span>
+    }
+
+    /**
+     * Creates a &lt;b&gt;POST&lt;/b&gt; HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
+    public Request post(String pathOrUri) {
+<span class="fc" id="L217">        return new Request(this, Request.Method.POST, buildPath(pathOrUri));</span>
+    }
+
+    /**
+     * Creates a &lt;b&gt;PUT&lt;/b&gt; HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
+    public Request put(String pathOrUri) {
+<span class="fc" id="L227">        return new Request(this, Request.Method.PUT, buildPath(pathOrUri));</span>
+    }
+
+    /**
+     * Creates a &lt;b&gt;DELETE&lt;/b&gt; HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
+    public Request delete(String pathOrUri) {
+<span class="fc" id="L237">        return new Request(this, Request.Method.DELETE, buildPath(pathOrUri));</span>
+    }
+
+    private String buildPath(String pathOrUri) {
+<span class="fc bfc" id="L241" title="All 2 branches covered.">        if (pathOrUri == null) {</span>
+<span class="fc" id="L242">            throw new IllegalArgumentException(&quot;pathOrUri must not be null&quot;);</span>
+        }
+<span class="fc bfc" id="L244" title="All 4 branches covered.">        if (pathOrUri.startsWith(&quot;http://&quot;) || pathOrUri.startsWith(&quot;https://&quot;)) {</span>
+<span class="fc" id="L245">            return pathOrUri;</span>
+        }
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        String myBaseUri = baseUri != null ? baseUri : globalBaseUri;</span>
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        return myBaseUri == null ? pathOrUri : myBaseUri + pathOrUri;</span>
+    }
+
+    &lt;T&gt; Response&lt;T&gt; execute(Request request, Class&lt;T&gt; clazz) {
+<span class="fc" id="L252">        Response&lt;T&gt; response = new Response&lt;T&gt;(request);</span>
+
+<span class="fc" id="L254">        InputStream is = null;</span>
+<span class="fc" id="L255">        HttpURLConnection connection = null;</span>
+
+        try {
+<span class="fc" id="L258">            String uri = request.uri;</span>
+<span class="pc bpc" id="L259" title="2 of 8 branches missed.">            if (request.method == Request.Method.GET &amp;&amp;</span>
+                    !uri.contains(&quot;?&quot;) &amp;&amp;
+                    request.params != null &amp;&amp;
+                    !request.params.isEmpty()) {
+<span class="fc" id="L263">                uri += &quot;?&quot; + WebbUtils.queryString(request.params);</span>
+            }
+<span class="fc" id="L265">            URL apiUrl = new URL(uri);</span>
+<span class="fc" id="L266">            connection = (HttpURLConnection) apiUrl.openConnection();</span>
+
+<span class="fc" id="L268">            prepareSslConnection(connection);</span>
+<span class="fc" id="L269">            connection.setRequestMethod(request.method.name());</span>
+<span class="fc bfc" id="L270" title="All 2 branches covered.">            if (request.followRedirects != null) {</span>
+<span class="fc" id="L271">                connection.setInstanceFollowRedirects(request.followRedirects);</span>
+            }
+<span class="fc" id="L273">            connection.setUseCaches(request.useCaches);</span>
+<span class="fc" id="L274">            setTimeouts(request, connection);</span>
+<span class="fc bfc" id="L275" title="All 2 branches covered.">            if (request.ifModifiedSince != null) {</span>
+<span class="fc" id="L276">                connection.setIfModifiedSince(request.ifModifiedSince);</span>
+            }
+
+<span class="fc" id="L279">            WebbUtils.addRequestProperties(connection, mergeHeaders(request.headers));</span>
+<span class="fc bfc" id="L280" title="All 4 branches covered.">            if (clazz == JSONObject.class || clazz == JSONArray.class) {</span>
+<span class="fc" id="L281">                WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);</span>
+            }
+
+<span class="fc bfc" id="L284" title="All 4 branches covered.">            if (request.method != Request.Method.GET &amp;&amp; request.method != Request.Method.DELETE) {</span>
+<span class="fc bfc" id="L285" title="All 2 branches covered.">                if (request.streamPayload) {</span>
+<span class="fc" id="L286">                    WebbUtils.setContentTypeAndLengthForStreaming(connection, request, request.compress);</span>
+<span class="fc" id="L287">                    connection.setDoOutput(true);</span>
+<span class="fc" id="L288">                    streamBody(connection, request.payload, request.compress);</span>
+                } else {
+<span class="fc" id="L290">                    byte[] requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(</span>
+                            connection, request, request.compress, jsonIndentFactor);
+
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">                    if (requestBody != null) {</span>
+<span class="fc" id="L294">                        connection.setDoOutput(true);</span>
+<span class="fc" id="L295">                        writeBody(connection, requestBody);</span>
+                    }
+<span class="fc" id="L297">                }</span>
+            } else {
+<span class="fc" id="L299">                connection.connect();</span>
+            }
+
+<span class="fc" id="L302">            response.connection = connection;</span>
+<span class="fc" id="L303">            response.statusCode = connection.getResponseCode();</span>
+<span class="fc" id="L304">            response.responseMessage = connection.getResponseMessage();</span>
+
+            // get the response body (if any)
+<span class="fc bfc" id="L307" title="All 2 branches covered.">            is = response.isSuccess() ? connection.getInputStream() : connection.getErrorStream();</span>
+<span class="fc" id="L308">            is = WebbUtils.wrapStream(connection.getContentEncoding(), is);</span>
+<span class="fc" id="L309">            byte[] responseBody = WebbUtils.readBytes(is);</span>
+
+<span class="fc bfc" id="L311" title="All 2 branches covered.">            if (response.isSuccess()) {</span>
+<span class="fc" id="L312">                WebbUtils.parseResponseBody(clazz, response, responseBody);</span>
+            } else {
+<span class="fc" id="L314">                WebbUtils.parseErrorResponse(clazz, response, responseBody);</span>
+            }
+
+<span class="fc bfc" id="L317" title="All 2 branches covered.">            if (request.ensureSuccess) {</span>
+<span class="fc" id="L318">                response.ensureSuccess();</span>
+            }
+
+<span class="fc" id="L321">            return response;</span>
+
+<span class="fc" id="L323">        } catch (WebbException e) {</span>
+
+<span class="fc" id="L325">            throw e;</span>
+
+<span class="fc" id="L327">        } catch (Exception e) {</span>
+
+<span class="fc" id="L329">            throw new WebbException(e);</span>
+
+        } finally {
+<span class="fc bfc" id="L332" title="All 4 branches covered.">            if (is != null) {</span>
+<span class="pc" id="L333">                try { is.close(); } catch (Exception ignored) {}</span>
+            }
+<span class="pc bpc" id="L335" title="2 of 4 branches missed.">            if (connection != null) {</span>
+<span class="pc" id="L336">                try { connection.disconnect(); } catch (Exception ignored) {}</span>
+            }
+        }
+    }
+
+    private void setTimeouts(Request request, HttpURLConnection connection) {
+<span class="pc bpc" id="L342" title="1 of 4 branches missed.">        if (request.connectTimeout != null || connectTimeout != null) {</span>
+<span class="fc bfc" id="L343" title="All 2 branches covered.">            connection.setConnectTimeout(</span>
+                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);
+        }
+<span class="pc bpc" id="L346" title="1 of 4 branches missed.">        if (request.readTimeout != null || readTimeout != null) {</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">            connection.setReadTimeout(</span>
+                    request.readTimeout != null ? request.readTimeout : readTimeout);
+        }
+<span class="fc" id="L350">    }</span>
+
+    private void writeBody(HttpURLConnection connection, byte[] body) throws IOException {
+        // Android StrictMode might complain about not closing the connection:
+        // &quot;E/StrictMode﹕ A resource was acquired at attached stack trace but never released&quot;
+        // It seems like some kind of bug in special devices (e.g. 4.0.4/Sony) but does not
+        // happen e.g. on 4.4.2/Moto G.
+        // Closing the stream in the try block might help sometimes (it's intermittently),
+        // but I don't want to deal with the IOException which can be thrown in close().
+<span class="fc" id="L359">        OutputStream os = null;</span>
+        try {
+<span class="fc" id="L361">            os = connection.getOutputStream();</span>
+<span class="fc" id="L362">            os.write(body);</span>
+<span class="fc" id="L363">            os.flush();</span>
+        } finally {
+<span class="pc bpc" id="L365" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc" id="L366">                try { os.close(); } catch (Exception ignored) {}</span>
+            }
+        }
+<span class="fc" id="L369">    }</span>
+
+    private void streamBody(HttpURLConnection connection, Object body, boolean compress) throws IOException {
+        InputStream is;
+        boolean closeStream;
+
+<span class="fc bfc" id="L375" title="All 2 branches covered.">        if (body instanceof File) {</span>
+<span class="fc" id="L376">            is = new FileInputStream((File) body);</span>
+<span class="fc" id="L377">            closeStream = true;</span>
+        } else {
+<span class="fc" id="L379">            is = (InputStream) body;</span>
+<span class="fc" id="L380">            closeStream = false;</span>
+        }
+
+        // &quot;E/StrictMode﹕ A resource was acquired at attached stack trace but never released&quot;
+        // see comments about this problem in #writeBody()
+<span class="fc" id="L385">        OutputStream os = null;</span>
+        try {
+<span class="fc" id="L387">            os = connection.getOutputStream();</span>
+<span class="fc bfc" id="L388" title="All 2 branches covered.">            if (compress) {</span>
+<span class="fc" id="L389">                os = new GZIPOutputStream(os);</span>
+            }
+<span class="fc" id="L391">            WebbUtils.copyStream(is, os);</span>
+<span class="fc" id="L392">            os.flush();</span>
+        } finally {
+<span class="pc bpc" id="L394" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc" id="L395">                try { os.close(); } catch (Exception ignored) {}</span>
+            }
+<span class="pc bpc" id="L397" title="5 of 8 branches missed.">            if (is != null &amp;&amp; closeStream) {</span>
+<span class="pc" id="L398">                try { is.close(); } catch (Exception ignored) {}</span>
+            }
+        }
+<span class="fc" id="L401">    }</span>
+
+    private void prepareSslConnection(HttpURLConnection connection) {
+<span class="pc bpc" id="L404" title="2 of 6 branches missed.">        if ((hostnameVerifier != null || sslSocketFactory != null) &amp;&amp; connection instanceof HttpsURLConnection) {</span>
+<span class="fc" id="L405">            HttpsURLConnection sslConnection = (HttpsURLConnection) connection;</span>
+<span class="pc bpc" id="L406" title="1 of 2 branches missed.">            if (hostnameVerifier != null) {</span>
+<span class="fc" id="L407">                sslConnection.setHostnameVerifier(hostnameVerifier);</span>
+            }
+<span class="pc bpc" id="L409" title="1 of 2 branches missed.">            if (sslSocketFactory != null) {</span>
+<span class="fc" id="L410">                sslConnection.setSSLSocketFactory(sslSocketFactory);</span>
+            }
+        }
+<span class="fc" id="L413">    }</span>
+
+    Map&lt;String, Object&gt; mergeHeaders(Map&lt;String, Object&gt; requestHeaders) {
+<span class="fc" id="L416">        Map&lt;String, Object&gt; headers = null;</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">        if (!globalHeaders.isEmpty()) {</span>
+<span class="fc" id="L418">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L419">            headers.putAll(globalHeaders);</span>
+        }
+<span class="pc bpc" id="L421" title="1 of 2 branches missed.">        if (defaultHeaders != null) {</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            if (headers == null) {</span>
+<span class="nc" id="L423">                headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+            }
+<span class="nc" id="L425">            headers.putAll(defaultHeaders);</span>
+        }
+<span class="fc bfc" id="L427" title="All 2 branches covered.">        if (requestHeaders != null) {</span>
+<span class="pc bpc" id="L428" title="1 of 2 branches missed.">            if (headers == null) {</span>
+<span class="nc" id="L429">                headers = requestHeaders;</span>
+            } else {
+<span class="fc" id="L431">                headers.putAll(requestHeaders);</span>
+            }
+        }
+<span class="fc" id="L434">        return headers;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>

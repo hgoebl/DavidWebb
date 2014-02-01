@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Const.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Const.java</span></div><h1>Const.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+
+/**
+ * Constant values and strings.
+ */
+<span class="nc" id="L6">class Const {</span>
+    static final String DEFAULT_USER_AGENT = &quot;com.goebl.david.Webb/1.0&quot;;
+    static final String APP_FORM = &quot;application/x-www-form-urlencoded&quot;;
+    static final String APP_JSON = &quot;application/json&quot;;
+    static final String APP_BINARY = &quot;application/octet-stream&quot;;
+    static final String TEXT_PLAIN = &quot;text/plain&quot;;
+    static final String HDR_CONTENT_TYPE = &quot;Content-Type&quot;;
+    static final String HDR_CONTENT_ENCODING = &quot;Content-Encoding&quot;;
+    static final String HDR_ACCEPT_ENCODING = &quot;Accept-Encoding&quot;;
+    static final String HDR_ACCEPT = &quot;Accept&quot;;
+    static final String HDR_USER_AGENT = &quot;User-Agent&quot;;
+    static final String UTF8 = &quot;utf-8&quot;;
+
+<span class="fc" id="L19">    static final byte[] EMPTY_BYTE_ARRAY = new byte[0];</span>
+<span class="fc" id="L20">    static final Class BYTE_ARRAY_CLASS = EMPTY_BYTE_ARRAY.getClass();</span>
+    /** Minimal number of bytes the compressed content must be smaller than uncompressed */
+    static final int MIN_COMPRESSED_ADVANTAGE = 80;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>

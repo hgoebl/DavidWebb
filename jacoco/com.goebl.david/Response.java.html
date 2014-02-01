@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Response.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Response.java</span></div><h1>Response.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+
+import java.net.HttpURLConnection;
+
+/**
+ * Holds data about the response message returning from HTTP request.
+ *
+ * @author hgoebl
+ */
+public class Response&lt;T&gt; {
+    final Request request;
+
+    int statusCode;
+    String responseMessage;
+    T body;
+    Object errorBody;
+    HttpURLConnection connection;
+
+<span class="fc" id="L19">    Response(Request request) {</span>
+<span class="fc" id="L20">        this.request = request;</span>
+<span class="fc" id="L21">    }</span>
+
+    void setBody(Object body) {
+<span class="fc" id="L24">        this.body = (T) body;</span>
+<span class="fc" id="L25">    }</span>
+
+    /**
+     * Access to the &lt;code&gt;Request&lt;/code&gt; object (which will not be very useful in most cases).
+     * @return the request object which was responsible for creating this response.
+     */
+    public Request getRequest() {
+<span class="fc" id="L32">        return request;</span>
+    }
+
+    /**
+     * Returns the payload of the response converted to the given type.
+     * @return the converted payload (can be null).
+     */
+    public T getBody() {
+<span class="fc" id="L40">        return body;</span>
+    }
+
+    /**
+     * Get the body which was returned in case of error (HTTP-Code &gt;= 400).
+     * &lt;br/&gt;
+     * The type of the error body depends on following factors:
+     * &lt;ul&gt;
+     *     &lt;li&gt;
+     *         &lt;code&gt;Content-Type&lt;/code&gt; header (overrules the expected return type of the response)
+     *     &lt;/li&gt;
+     *     &lt;li&gt;
+     *         The expected type (see &lt;code&gt;asXyz()&lt;/code&gt;). We try to coerce the error body to this type.
+     *         In case of REST services, where often a JSONObject is the normal response body, the error body
+     *         will be converted to JSONObject if possible. &lt;code&gt;JSONArray&lt;/code&gt; is not expected to be the
+     *         error body.
+     *     &lt;/li&gt;
+     * &lt;/ul&gt;
+     * If converting the error body is not successful, &lt;code&gt;String&lt;/code&gt; and &lt;code&gt;byte[]&lt;/code&gt; is used as
+     * a fallback. You have to check the type with &lt;code&gt;instanceof&lt;/code&gt; or try/catch the cast.
+     * @return the error body converted to an object (see above) or &lt;code&gt;null&lt;/code&gt; if there is no body or
+     *         no error.
+     */
+    public Object getErrorBody() {
+<span class="fc" id="L64">        return errorBody;</span>
+    }
+
+    /**
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#responseCode&quot;&gt;
+     *     HttpURLConnection.responseCode&lt;/a&gt;
+     * @return An int representing the three digit HTTP Status-Code.
+     */
+    public int getStatusCode() {
+<span class="fc" id="L73">        return statusCode;</span>
+    }
+
+    /**
+     * The first line returned by the web-server, like &quot;HTTP/1.1 200 OK&quot;.
+     * @return first header
+     */
+    public String getStatusLine() {
+<span class="fc" id="L81">        return connection.getHeaderField(null);</span>
+    }
+
+    /**
+     * Was the request successful (returning a 2xx status code)?
+     * @return &lt;code&gt;true&lt;/code&gt; when status code is between 200 and 299, else &lt;code&gt;false&lt;/code&gt;
+     */
+    public boolean isSuccess() {
+<span class="fc bfc" id="L89" title="All 2 branches covered.">        return (statusCode / 100) == 2; // 200, 201, 204, ...</span>
+    }
+
+    /**
+     * Returns the text explaining the status code.
+     * @return e.g. &quot;Moved Permanently&quot;, &quot;Created&quot;, ...
+     */
+    public String getResponseMessage() {
+<span class="fc" id="L97">        return responseMessage;</span>
+    }
+
+    /**
+     * Returns the MIME-type of the response body.
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getContentType()&quot;&gt;
+     *     URLConnection.getContentType()&lt;/a&gt;
+     *
+     * @return e.g. &quot;application/json&quot;, &quot;text/plain&quot;, ...
+     */
+    public String getContentType() {
+<span class="fc" id="L109">        return connection.getContentType();</span>
+    }
+
+    /**
+     * Returns the date when the request was created (server-time).
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getDate()&quot;&gt;
+     *     URLConnection.getDate()&lt;/a&gt;
+     *
+     * @return the parsed &quot;Date&quot; header as millis or &lt;code&gt;0&lt;/code&gt; if this header was not set.
+     */
+    public long getDate() {
+<span class="fc" id="L121">        return connection.getDate();</span>
+    }
+
+    /**
+     * Returns the value of the expires header field.
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getExpiration()&quot;&gt;
+     *     URLConnection.getExpiration()&lt;/a&gt;
+     *
+     * @return the expiration date of the resource, or 0 if not known.
+     */
+    public long getExpiration() {
+<span class="fc" id="L133">        return connection.getExpiration();</span>
+    }
+
+    /**
+     * Returns the value of the last-modified header field.
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getLastModified()&quot;&gt;
+     *     URLConnection.getLastModified()&lt;/a&gt;
+     *
+     * @return the date the resource was last modified, or 0 if not known.
+     */
+    public long getLastModified() {
+<span class="fc" id="L145">        return connection.getLastModified();</span>
+    }
+
+    /**
+     * Returns the value of the named header field.
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderField(java.lang.String)&quot;&gt;
+     *     URLConnection.getHeaderField()&lt;/a&gt;
+     *
+     * @param name name of the header field
+     * @return the value of the named header field, or null
+     */
+    public String getHeaderField (String name) {
+<span class="fc" id="L158">        return connection.getHeaderField(name);</span>
+    }
+
+    /**
+     * Returns the value of the named field parsed as date (Millis since 1970).
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String, long)&quot;&gt;
+     *     URLConnection.getHeaderFieldDate()&lt;/a&gt;
+     *
+     * @param field name of the header field
+     * @param defaultValue the default value if the field is not present or malformed
+     * @return the value of the named header field, or the given default value
+     */
+    public long getHeaderFieldDate (String field, long defaultValue) {
+<span class="fc" id="L172">        return connection.getHeaderFieldDate(field, defaultValue);</span>
+    }
+
+    /**
+     * Returns the value of the named field parsed as a number.
+     * &lt;br/&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String, int)&quot;&gt;
+     *     URLConnection.getHeaderFieldInt()&lt;/a&gt;
+     *
+     * @param field name of the header field
+     * @param defaultValue the default value if the field is not present or malformed
+     * @return the value of the named header field, or the given default value
+     */
+    public int getHeaderFieldInt(String field, int defaultValue) {
+<span class="fc" id="L186">        return connection.getHeaderFieldInt(field, defaultValue);</span>
+    }
+
+    /**
+     * Get the &quot;real&quot; connection, typically to call some getters which are not provided by this Response object.
+     * @return the connection object (many methods throw IllegalStateException depending on the internal state).
+     */
+    public HttpURLConnection getConnection() {
+<span class="fc" id="L194">        return connection;</span>
+    }
+
+    /**
+     * A shortcut to check for successful status codes and throw exception in case of non-2xx status codes.
+     * &lt;br/&gt;
+     * In many cases you will call {@link com.goebl.david.Request#ensureSuccess()} instead of this method.
+     * But there might be cases where you want to inspect the response-object first (check header values) and
+     * then have a short exit where the response-code is not suitable for further normal processing.
+     */
+    public void ensureSuccess() {
+<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (!isSuccess()) {</span>
+<span class="fc" id="L206">            throw new WebbException(&quot;Request failed: &quot; + statusCode + &quot; &quot; + responseMessage, (Response) this);</span>
+        }
+<span class="fc" id="L208">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
