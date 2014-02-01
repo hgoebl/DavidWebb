@@ -20,7 +20,7 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
 **DavidWebb** is a small wrapper around
 [HttpURLConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
 It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
-lightweight (~16 KB jar) and super-easy to use.
+lightweight (~18 KB jar) and super-easy to use.
 
 ## Features ##
 
@@ -40,7 +40,8 @@ lightweight (~16 KB jar) and super-easy to use.
 
 Following features are not supported and there are no plans to realize them:
 
-  * Cookie management (read `Set-Cookie` header from response and set `Cookie` header for request)
+  * Cookie management (read `Set-Cookie` header from response and set `Cookie` header for request).
+    As DavidWebb is just a thin wrapper over HttpURLConnection, you can use `CookieManager`.
   * Comfortable Basic Authentication (it's not hard to implement it above of DavidWebb, see below)
   * Multi-Part upload
   * Mixing URL-parameters and x-www-form-urlencoded POST bodies.<br>
@@ -136,22 +137,32 @@ if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
 }
 ```
 
-# Maven Coordinates
+## In Case Of Problems
 
-**ATTENTION: Version 1.0.0 has a nasty bug for Android devices < API 19! Don't use it - it is fixed
-together with other bugs in version 1.1.0-SNAPSHOT. Release 1.1.0 coming soon!**
+I've encountered some problems which could be solved by disabling **keep-alive** of HTTP connections.
+The solution above did not always work on recent versions of Android. To be sure to do without
+keep-alive, you can set an HTTP header like this:
+
+```
+// disable 'keep-alive' for all requests created by this instance of Webb
+webb.setDefaultHeader("Connection", "close");
+
+// disable only for this request
+Request<String> request = webb.post("/some-resource").header("Connection", "close");
+```
+# Maven Coordinates
 
 ```xml
 <dependency>
     <groupId>com.goebl</groupId>
     <artifactId>david-webb</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
 Gradle
 
-    'com.goebl:david-webb:1.0.0'
+    'com.goebl:david-webb:1.1.0'
 
 Not using Maven/Gradle? - Then you can download the plain JAR from following links directly:
 
@@ -179,8 +190,7 @@ If **DavidWebb** is too lightweight and you're missing features, you can have a 
   * [Volley](https://android.googlesource.com/platform/frameworks/volley) and
     [Volley Example](http://www.technotalkative.com/android-volley-library-example/)
     IMHO: Probably quite good, but where's the documentation?
-  * [DataDroid](http://datadroid.foxykeep.com/)
-    - an Android library for Data Management
+  * [DataDroid](http://datadroid.foxykeep.com/) - an Android library for Data Management
   * [More Alternatives (on RoboSpice)](https://github.com/octo-online/robospice#alternatives-to-robospice-)
   * (tell me if I missed your award-winning REST-client library!)
 
@@ -211,22 +221,48 @@ npm install
 node .
 ```
 
+## Android Tests
+
+Before running the Android tests, build with maven, deploy the Android app and be sure to
+set the timezone of your emulator to the same as your PC and synchronize date/time,
+otherwise some tests will fail:
+
+```sh
+# synchronize time of emulator (otherwise problems with SSL are likely)
+adb -e shell date -s `date +"%Y%m%d.%H%M%S"`
+
+# run the tests
+adb shell am instrument -w \
+  -e class com.goebl.david.tests.DavidWebbAndroidTests \
+  com.goebl.david/android.test.InstrumentationTestRunner
+```
+
 ## Coverage
 
+The test coverage is measured only with the JUnit-tests for JavaSE. As mocking is not easy
+to accomplish under Android/Dalvik, coverage is not measured for this runtime environment.
+
   * Class: 100%
-  * Method: 81%
-  * Line: 86%
+  * Instructions: 90%
+  * Branches: 79%
+  * see [JaCoCo Coverage Report](http://hgoebl.github.io/DavidWebb/jacoco/)
 
 # TODO
 
 ## Features (planned)
+  * support char-sets other than UTF-8
   * unprefixJson <http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx>
 
 ## Features (only ideas)
+  * provide base classes (or only examples) for using DavidWebb together with `AsyncTask`
   * decorator/interceptor beforeSend - provide hooks to manipulate request before send
   * decorator/interceptor afterReceive - provide hooks to manipulate raw response after receiving it
 
 Create an issue if you want to have one of those ideas implemented.
 
+## Documentation
+  * Create User-Guide
+
 ## Testing
+  * Higher coverage
   * Test against httpbin.org
