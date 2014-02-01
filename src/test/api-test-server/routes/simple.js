@@ -28,6 +28,10 @@ module.exports = function registerRoutes(app) {
         res.send(204);
     });
 
+    app.get('/no-content', function (req, res) {
+        res.send(204);
+    });
+
     app.get('/parameter-types', function (req, res) {
         var ok = req.param('string') === SIMPLE_ASCII &&
             req.param('number') === '4711' &&

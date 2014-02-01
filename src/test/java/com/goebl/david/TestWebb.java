@@ -6,8 +6,6 @@ import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-// TODO express res.charset = "value" => Content-Type: text/html; charset=value
-
 public class TestWebb extends AbstractTestWebb {
 
     public void testMisc() throws Exception {
@@ -138,6 +136,26 @@ public class TestWebb extends AbstractTestWebb {
         assertEquals(204, response.getStatusCode());
         assertTrue(response.isSuccess());
         assertEquals("No Content", response.getResponseMessage());
+    }
+
+    public void testNoContent() throws Exception {
+
+        Response<Void> responseAsVoid = webb
+                .get("/no-content")
+                .asVoid();
+
+        assertEquals(204, responseAsVoid.getStatusCode());
+        assertTrue(responseAsVoid.isSuccess());
+        assertEquals("No Content", responseAsVoid.getResponseMessage());
+
+        Response<String> responseAsString = webb
+                .get("/no-content")
+                .asString();
+
+        assertEquals(204, responseAsString.getStatusCode());
+        assertTrue(responseAsString.isSuccess());
+        assertEquals("No Content", responseAsString.getResponseMessage());
+        assertEquals("", responseAsString.getBody());
     }
 
     public void testParameterTypes() throws Exception {
