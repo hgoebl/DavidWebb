@@ -64,6 +64,15 @@ public class Request {
     }
 
     /**
+     * Get the URI of this request.
+     *
+     * @return URI
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
      * Set (or overwrite) a HTTP header value.
      * <br/>
      * Setting a header this way has the highest precedence and overrides a header value set on a {@link Webb}

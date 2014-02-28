@@ -172,6 +172,15 @@ public class Webb {
     }
 
     /**
+     * Returns the base URI of this instance.
+     *
+     * @return base URI
+     */
+    public String getBaseUri() {
+        return baseUri;
+    }
+
+    /**
      * Set the value for a named header which is valid for all requests created by this instance.
      * <br/>
      * The value takes precedence over {@link Webb#setGlobalHeader(String, Object)} but can be overwritten by
