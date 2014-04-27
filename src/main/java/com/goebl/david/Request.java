@@ -37,6 +37,8 @@ public class Request {
     Boolean followRedirects;
     boolean ensureSuccess;
     boolean compress;
+    int retryCount;
+    boolean waitExponential;
 
     Request(Webb webb, Method method, String uri) {
         this.webb = webb;
@@ -247,6 +249,35 @@ public class Request {
      */
     public Request ensureSuccess() {
         this.ensureSuccess = true;
+        return this;
+    }
+
+    /**
+     * Set the number of retries after the first request failed.
+     * <br/>
+     * When `waitExponential` is set, then there will be {@link Thread#sleep(long)} between
+     * the retries. If the thread is interrupted, there will be an `InterruptedException`
+     * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
+     * The `interrupted` flag will be set to true in this case.
+     *
+     * @param retryCount the number of retries, 0 means no retry, which is the default.
+     *                   Values > 10 are ignored (we're not gatling)
+     * @param waitExponential sleep during retry attempts (exponential backoff).
+     *                        For retry-counts more than 2, <tt>true</tt> is mandatory.
+     * @return <code>this</code> for method chaining (fluent API)
+     */
+    public Request retry(int retryCount, boolean waitExponential) {
+        if (retryCount < 0) {
+            retryCount = 0;
+        }
+        if (retryCount > 10) {
+            retryCount = 10;
+        }
+        if (retryCount >= 3 && !waitExponential) {
+            throw new IllegalArgumentException("retries > 2 only valid with wait");
+        }
+        this.retryCount = retryCount;
+        this.waitExponential = waitExponential;
         return this;
     }
 

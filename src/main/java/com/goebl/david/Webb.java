@@ -48,6 +48,7 @@ public class Webb {
     Map<String, Object> defaultHeaders;
     SSLSocketFactory sslSocketFactory;
     HostnameVerifier hostnameVerifier;
+    RetryManager retryManager;
 
     private Webb() {}
 
@@ -207,6 +208,14 @@ public class Webb {
     }
 
     /**
+     * Registers an alternative {@link com.goebl.david.RetryManager}.
+     * @param retryManager the new manager for deciding whether it makes sense to retry a request.
+     */
+    public void setRetryManager(RetryManager retryManager) {
+        this.retryManager = retryManager;
+    }
+
+    /**
      * Creates a <b>GET HTTP</b> request with the specified absolute or relative URI.
      * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking).
      *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
@@ -258,6 +267,43 @@ public class Webb {
     }
 
     <T> Response<T> execute(Request request, Class<T> clazz) {
+        Response<T> response = null;
+
+        if (request.retryCount == 0) {
+            // no retry -> just delegate to inner method
+            response = _execute(request, clazz);
+        } else {
+            if (retryManager == null) {
+                retryManager = RetryManager.DEFAULT;
+            }
+            for (int tries = 0; tries <= request.retryCount; ++tries) {
+                try {
+                    response = _execute(request, clazz);
+                    if (tries >= request.retryCount || !retryManager.isRetryUseful(response)) {
+                        break;
+                    }
+                } catch (WebbException we) {
+                    // analyze: is exception recoverable?
+                    if (tries >= request.retryCount || !retryManager.isRecoverable(we)) {
+                        throw we;
+                    }
+                }
+                if (request.waitExponential) {
+                    retryManager.wait(tries);
+                }
+            }
+        }
+        if (response == null) {
+            throw new IllegalStateException(); // should never reach this line
+        }
+        if (request.ensureSuccess) {
+            response.ensureSuccess();
+        }
+
+        return response;
+    }
+
+    private <T> Response<T> _execute(Request request, Class<T> clazz) {
         Response<T> response = new Response<T>(request);
 
         InputStream is = null;
@@ -321,10 +367,6 @@ public class Webb {
                 WebbUtils.parseResponseBody(clazz, response, responseBody);
             } else {
                 WebbUtils.parseErrorResponse(clazz, response, responseBody);
-            }
-
-            if (request.ensureSuccess) {
-                response.ensureSuccess();
             }
 
             return response;

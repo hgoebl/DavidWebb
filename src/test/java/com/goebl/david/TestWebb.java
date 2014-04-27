@@ -266,4 +266,13 @@ public class TestWebb extends AbstractTestWebb {
         String result = webb.get("/ping").ensureSuccess().asString().getBody();
         assertEquals("pong", result);
     }
+
+    // should be moved to TestRequest
+    public void testGetUri() throws Exception {
+
+        webb.setBaseUri("http://example.com");
+        Request request = webb.get("/simple.txt");
+
+        assertEquals("http://example.com/simple.txt", request.getUri());
+    }
 }

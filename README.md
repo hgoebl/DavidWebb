@@ -35,6 +35,7 @@ lightweight (~18 KB jar) and super-easy to use.
   * Un-compress gzip/deflate downloads
   * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
   * pass-through to "real" connection for special cases
+  * option to retry the request in case of special errors (503, 504, 'connection reset by peer')
 
 ## Non-Features ##
 
@@ -57,7 +58,7 @@ the JAR, please create a pull request. (Adding heavy dependencies is not an opti
 Below you can see some examples of how to use DavidWebb. And here you can find the
 [API Documentation](http://hgoebl.github.io/DavidWebb/apidocs/).
 
-This is some code from a SyncAdapter of an Android App:
+**This is some code from a SyncAdapter of an Android App:**
 
 ```java
 // create the client (one-time, can be used from different threads)
@@ -94,7 +95,7 @@ webb.delete("/session").asVoid();
 accessToken = null;
 ```
 
-Using Google Directions API:
+**Using Google Directions API:**
 
 ```java
 Webb webb = Webb.create();
@@ -111,7 +112,29 @@ JSONObject result = webb
 JSONArray routes = result.getJSONArray("routes");
 ```
 
-You have to do Basic Authentication?
+**Deal with "connection reset by peer" or other recoverable errors**
+
+Android (at least >= GINGERBREAD) automatically sets the "Connection" header to "keep-alive".
+This sometimes causes errors, because the server might already have closed the connection without
+the mobile device knowing it. It would be cumbersome to cope with this and other situation where
+a retry solved all problems. Since version 1.2.0 it is more comfortable for you:
+
+```java
+Webb webb = Webb.create();
+JSONObject result = webb
+        .get("https://example.com/api/request")
+        .retry(1, false) // at most one retry, don't do exponential backoff
+        .asJsonObject()
+        .getBody();
+```
+
+In many cases you will need to change the behaviour of how and when to retry a request.
+For this, you can register your own `RetryManager`, see `webb.setRetryManager()`.
+
+**Hint:** Currently `1.2.0` is not yet released. Build from sources or download `1.2.0-SNAPSHOT`
+from staging-server (see Maven Coordinates).
+
+**You have to do Basic Authentication?**
 
 This authorization method uses a Base64 encoded string. Unfortunately Java SE doesn't provide a
 Base64 encoder. Because DavidWebb wants to be light and Android already provides a Base64 support class,
@@ -124,6 +147,8 @@ String auth = "Basic " + Base64.encodeToString(credentials, 0);
 Webb webb = Webb.create();
 webb.setDefaultHeader(Webb.HDR_AUTHORIZATION, auth);
 ```
+
+**More Samples**
 
 If you want to see more examples, just have a look at the JUnit TestCase (src/test/java/...).
 
