@@ -1,8 +1,9 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 DavidWebb,com.goebl.david,Response,0,99,0,4,0,23,0,20,0,18
 DavidWebb,com.goebl.david,Request.Method,9,49,0,0,0,2,2,2,2,2
-DavidWebb,com.goebl.david,Request,0,154,0,12,0,38,0,22,0,16
+DavidWebb,com.goebl.david,RetryManager,36,79,10,4,13,9,7,5,1,4
+DavidWebb,com.goebl.david,Request,4,180,3,17,2,46,3,25,0,18
 DavidWebb,com.goebl.david,WebbUtils,51,540,12,86,14,136,13,53,1,16
 DavidWebb,com.goebl.david,Const,3,7,0,0,1,2,1,1,1,1
-DavidWebb,com.goebl.david,Webb,86,500,36,74,15,125,32,47,3,21
+DavidWebb,com.goebl.david,Webb,109,552,43,85,22,139,39,52,5,22
 DavidWebb,com.goebl.david,WebbException,0,23,0,0,0,10,0,5,0,5

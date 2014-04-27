@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Request.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Request.java</span></div><h1>Request.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../resources/report.css" type="text/css"/><link rel="shortcut icon" href="../resources/report.gif" type="image/gif"/><title>Request.java</title><link rel="stylesheet" href="../resources/prettify.css" type="text/css"/><script type="text/javascript" src="../resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Request.java</span></div><h1>Request.java</h1><pre class="source lang-java linenums">package com.goebl.david;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,13 +37,15 @@ public class Request {
     Boolean followRedirects;
     boolean ensureSuccess;
     boolean compress;
+    int retryCount;
+    boolean waitExponential;
 
-<span class="fc" id="L41">    Request(Webb webb, Method method, String uri) {</span>
-<span class="fc" id="L42">        this.webb = webb;</span>
-<span class="fc" id="L43">        this.method = method;</span>
-<span class="fc" id="L44">        this.uri = uri;</span>
-<span class="fc" id="L45">        this.followRedirects = webb.followRedirects;</span>
-<span class="fc" id="L46">    }</span>
+<span class="fc" id="L43">    Request(Webb webb, Method method, String uri) {</span>
+<span class="fc" id="L44">        this.webb = webb;</span>
+<span class="fc" id="L45">        this.method = method;</span>
+<span class="fc" id="L46">        this.uri = uri;</span>
+<span class="fc" id="L47">        this.followRedirects = webb.followRedirects;</span>
+<span class="fc" id="L48">    }</span>
 
     /**
      * Set (or overwrite) a parameter.
@@ -56,11 +58,20 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request param(String name, Object value) {
-<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (params == null) {</span>
-<span class="fc" id="L60">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (params == null) {</span>
+<span class="fc" id="L62">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L62">        params.put(name, value);</span>
-<span class="fc" id="L63">        return this;</span>
+<span class="fc" id="L64">        params.put(name, value);</span>
+<span class="fc" id="L65">        return this;</span>
+    }
+
+    /**
+     * Get the URI of this request.
+     *
+     * @return URI
+     */
+    public String getUri() {
+<span class="fc" id="L74">        return uri;</span>
     }
 
     /**
@@ -84,11 +95,11 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request header(String name, Object value) {
-<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (headers == null) {</span>
-<span class="fc" id="L88">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (headers == null) {</span>
+<span class="fc" id="L99">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L90">        headers.put(name, value);</span>
-<span class="fc" id="L91">        return this;</span>
+<span class="fc" id="L101">        headers.put(name, value);</span>
+<span class="fc" id="L102">        return this;</span>
     }
 
     /**
@@ -136,12 +147,12 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request body(Object body) {
-<span class="fc bfc" id="L139" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
-<span class="fc" id="L140">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
+<span class="fc bfc" id="L150" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
+<span class="fc" id="L151">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
         }
-<span class="fc" id="L142">        this.payload = body;</span>
-<span class="fc bfc" id="L143" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
-<span class="fc" id="L144">        return this;</span>
+<span class="fc" id="L153">        this.payload = body;</span>
+<span class="fc bfc" id="L154" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
+<span class="fc" id="L155">        return this;</span>
     }
 
     /**
@@ -158,8 +169,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request compress() {
-<span class="fc" id="L161">        compress = true;</span>
-<span class="fc" id="L162">        return this;</span>
+<span class="fc" id="L172">        compress = true;</span>
+<span class="fc" id="L173">        return this;</span>
     }
 
     /**
@@ -173,8 +184,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request useCaches(boolean useCaches) {
-<span class="fc" id="L176">        this.useCaches = useCaches;</span>
-<span class="fc" id="L177">        return this;</span>
+<span class="fc" id="L187">        this.useCaches = useCaches;</span>
+<span class="fc" id="L188">        return this;</span>
     }
 
     /**
@@ -185,8 +196,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ifModifiedSince(long ifModifiedSince) {
-<span class="fc" id="L188">        this.ifModifiedSince = ifModifiedSince;</span>
-<span class="fc" id="L189">        return this;</span>
+<span class="fc" id="L199">        this.ifModifiedSince = ifModifiedSince;</span>
+<span class="fc" id="L200">        return this;</span>
     }
 
     /**
@@ -196,8 +207,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request connectTimeout(int connectTimeout) {
-<span class="fc" id="L199">        this.connectTimeout = connectTimeout;</span>
-<span class="fc" id="L200">        return this;</span>
+<span class="fc" id="L210">        this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L211">        return this;</span>
     }
 
     /**
@@ -208,8 +219,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request readTimeout(int readTimeout) {
-<span class="fc" id="L211">        this.readTimeout = readTimeout;</span>
-<span class="fc" id="L212">        return this;</span>
+<span class="fc" id="L222">        this.readTimeout = readTimeout;</span>
+<span class="fc" id="L223">        return this;</span>
     }
 
     /**
@@ -223,8 +234,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request followRedirects(boolean auto) {
-<span class="fc" id="L226">        this.followRedirects = auto;</span>
-<span class="fc" id="L227">        return this;</span>
+<span class="fc" id="L237">        this.followRedirects = auto;</span>
+<span class="fc" id="L238">        return this;</span>
     }
 
     /**
@@ -237,8 +248,37 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ensureSuccess() {
-<span class="fc" id="L240">        this.ensureSuccess = true;</span>
-<span class="fc" id="L241">        return this;</span>
+<span class="fc" id="L251">        this.ensureSuccess = true;</span>
+<span class="fc" id="L252">        return this;</span>
+    }
+
+    /**
+     * Set the number of retries after the first request failed.
+     * &lt;br/&gt;
+     * When `waitExponential` is set, then there will be {@link Thread#sleep(long)} between
+     * the retries. If the thread is interrupted, there will be an `InterruptedException`
+     * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
+     * The `interrupted` flag will be set to true in this case.
+     *
+     * @param retryCount the number of retries, 0 means no retry, which is the default.
+     *                   Values &gt; 10 are ignored (we're not gatling)
+     * @param waitExponential sleep during retry attempts (exponential backoff).
+     *                        For retry-counts more than 2, &lt;tt&gt;true&lt;/tt&gt; is mandatory.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request retry(int retryCount, boolean waitExponential) {
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
+<span class="nc" id="L271">            retryCount = 0;</span>
+        }
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
+<span class="nc" id="L274">            retryCount = 10;</span>
+        }
+<span class="pc bpc" id="L276" title="1 of 4 branches missed.">        if (retryCount &gt;= 3 &amp;&amp; !waitExponential) {</span>
+<span class="fc" id="L277">            throw new IllegalArgumentException(&quot;retries &gt; 2 only valid with wait&quot;);</span>
+        }
+<span class="fc" id="L279">        this.retryCount = retryCount;</span>
+<span class="fc" id="L280">        this.waitExponential = waitExponential;</span>
+<span class="fc" id="L281">        return this;</span>
     }
 
     /**
@@ -246,7 +286,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;String&lt;/code&gt;
      */
     public Response&lt;String&gt; asString() {
-<span class="fc" id="L249">        return webb.execute(this, String.class);</span>
+<span class="fc" id="L289">        return webb.execute(this, String.class);</span>
     }
 
     /**
@@ -254,7 +294,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONObject&lt;/code&gt;
      */
     public Response&lt;JSONObject&gt; asJsonObject() {
-<span class="fc" id="L257">        return webb.execute(this, JSONObject.class);</span>
+<span class="fc" id="L297">        return webb.execute(this, JSONObject.class);</span>
     }
 
     /**
@@ -262,7 +302,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONArray&lt;/code&gt;
      */
     public Response&lt;JSONArray&gt; asJsonArray() {
-<span class="fc" id="L265">        return webb.execute(this, JSONArray.class);</span>
+<span class="fc" id="L305">        return webb.execute(this, JSONArray.class);</span>
     }
 
     /**
@@ -270,7 +310,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;byte[]&lt;/code&gt;
      */
     public Response&lt;byte[]&gt; asBytes() {
-<span class="fc" id="L273">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
+<span class="fc" id="L313">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
     }
 
     /**
@@ -278,7 +318,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
      */
     public Response&lt;Void&gt; asVoid() {
-<span class="fc" id="L281">        return webb.execute(this, Void.class);</span>
+<span class="fc" id="L321">        return webb.execute(this, Void.class);</span>
     }
 
 }

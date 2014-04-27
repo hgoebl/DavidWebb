@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../resources/report.css" type="text/css"/><link rel="shortcut icon" href="../resources/report.gif" type="image/gif"/><title>RetryManager.java</title><link rel="stylesheet" href="../resources/prettify.css" type="text/css"/><script type="text/javascript" src="../resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">RetryManager.java</span></div><h1>RetryManager.java</h1><pre class="source lang-java linenums">package com.goebl.david;
+
+import javax.net.ssl.SSLException;
+import java.net.SocketTimeoutException;
+
+/**
+ * Decides whether a request should be retried or not.
+ * &lt;br/&gt;
+ * If you need other behaviour, just extend this class.
+ *
+ * @since 27.04.14.
+ */
+<span class="fc" id="L13">public class RetryManager {</span>
+    /** seconds to wait until next retry */
+<span class="fc" id="L15">    protected static final int[] BACKOFF = { 1, 2, 4, 7, 12, 20, 30, 60, 120 };</span>
+
+<span class="fc" id="L17">    static final RetryManager DEFAULT = new RetryManager();</span>
+
+    /**
+     * Indicates whether it would possibly make sense to retry the request.
+     * @param response the outcome of the request
+     * @return &lt;tt&gt;true&lt;/tt&gt; only in case of temporary (server-side) errors where retrying the
+     *         request could succeed.
+     */
+    public boolean isRetryUseful(Response response) {
+<span class="fc" id="L26">        int statusCode = response.getStatusCode();</span>
+<span class="pc bpc" id="L27" title="2 of 6 branches missed.">        return statusCode == 503 || statusCode == 504 || statusCode &gt;= 520;</span>
+    }
+
+    /**
+     * Analyzes whether the cause of an exception is worth retrying the request.
+     * &lt;br/&gt;
+     * This is not covering all situations and in case of doubt the exception is considered not
+     * recoverable. @YOU: if you find a case where an exception is recoverable, create an issue!
+     * @param webbException the exception to analyze
+     * @return &lt;tt&gt;true&lt;/tt&gt; if it makes sense for the request to be retried again.
+     */
+    public boolean isRecoverable(WebbException webbException) {
+<span class="nc" id="L39">        Throwable cause = webbException.getCause();</span>
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (cause == null) {</span>
+<span class="nc" id="L41">            return false;</span>
+        }
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (cause instanceof SSLException) {</span>
+<span class="nc" id="L44">            SSLException sslException = (SSLException) cause;</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (sslException.toString().toLowerCase().contains(&quot;connection reset by peer&quot;)) {</span>
+<span class="nc" id="L46">                return true;</span>
+            }
+        }
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        if (cause instanceof SocketTimeoutException) {</span>
+<span class="nc" id="L50">            return true;</span>
+        }
+<span class="nc" id="L52">        return false;</span>
+    }
+
+    /**
+     * Implementation for the actual wait (depends on the current retry sequence).
+     * @param retry the retry sequence (starts with 0 for the first retry).
+     */
+    public void wait(int retry) {
+<span class="fc" id="L60">        long sleepMillis = BACKOFF[Math.min(retry, BACKOFF.length - 1)] * 1000L;</span>
+        try {
+<span class="fc" id="L62">            Thread.sleep(sleepMillis);</span>
+<span class="nc" id="L63">        } catch (InterruptedException ie) {</span>
+<span class="nc" id="L64">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L65">            throw new WebbException(ie);</span>
+<span class="fc" id="L66">        }</span>
+<span class="fc" id="L67">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
