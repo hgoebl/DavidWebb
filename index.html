@@ -73,6 +73,7 @@ lightweight (~18 KB jar) and super-easy to use.</p>
 <li>Un-compress gzip/deflate downloads</li>
 <li>supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)</li>
 <li>pass-through to "real" connection for special cases</li>
+<li>option to retry the request in case of special errors (503, 504, 'connection reset by peer')</li>
 </ul><h2>
 <a name="non-features" class="anchor" href="#non-features"><span class="octicon octicon-link"></span></a>Non-Features</h2>
 
@@ -96,7 +97,7 @@ the JAR, please create a pull request. (Adding heavy dependencies is not an opti
 <p>Below you can see some examples of how to use DavidWebb. And here you can find the
 <a href="http://hgoebl.github.io/DavidWebb/apidocs/">API Documentation</a>.</p>
 
-<p>This is some code from a SyncAdapter of an Android App:</p>
+<p><strong>This is some code from a SyncAdapter of an Android App:</strong></p>
 
 <div class="highlight highlight-java"><pre><span class="c1">// create the client (one-time, can be used from different threads)</span>
 <span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
@@ -132,7 +133,7 @@ the JAR, please create a pull request. (Adding heavy dependencies is not an opti
 <span class="n">accessToken</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
 </pre></div>
 
-<p>Using Google Directions API:</p>
+<p><strong>Using Google Directions API:</strong></p>
 
 <div class="highlight highlight-java"><pre><span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
 <span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">webb</span>
@@ -148,7 +149,28 @@ the JAR, please create a pull request. (Adding heavy dependencies is not an opti
 <span class="n">JSONArray</span> <span class="n">routes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"routes"</span><span class="o">);</span>
 </pre></div>
 
-<p>You have to do Basic Authentication?</p>
+<p><strong>Deal with "connection reset by peer" or other recoverable errors</strong></p>
+
+<p>Android (at least &gt;= GINGERBREAD) automatically sets the "Connection" header to "keep-alive".
+This sometimes causes errors, because the server might already have closed the connection without
+the mobile device knowing it. It would be cumbersome to cope with this and other situation where
+a retry solved all problems. Since version 1.2.0 it is more comfortable for you:</p>
+
+<div class="highlight highlight-java"><pre><span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
+<span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">webb</span>
+        <span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"https://example.com/api/request"</span><span class="o">)</span>
+        <span class="o">.</span><span class="na">retry</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="c1">// at most one retry, don't do exponential backoff</span>
+        <span class="o">.</span><span class="na">asJsonObject</span><span class="o">()</span>
+        <span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+</pre></div>
+
+<p>In many cases you will need to change the behaviour of how and when to retry a request.
+For this, you can register your own <code>RetryManager</code>, see <code>webb.setRetryManager()</code>.</p>
+
+<p><strong>Hint:</strong> Currently <code>1.2.0</code> is not yet released. Build from sources or download <code>1.2.0-SNAPSHOT</code>
+from staging-server (see Maven Coordinates).</p>
+
+<p><strong>You have to do Basic Authentication?</strong></p>
 
 <p>This authorization method uses a Base64 encoded string. Unfortunately Java SE doesn't provide a
 Base64 encoder. Because DavidWebb wants to be light and Android already provides a Base64 support class,
@@ -160,6 +182,8 @@ Use one of the methods to set a header and set Authorization header by yourself:
 <span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
 <span class="n">webb</span><span class="o">.</span><span class="na">setDefaultHeader</span><span class="o">(</span><span class="n">Webb</span><span class="o">.</span><span class="na">HDR_AUTHORIZATION</span><span class="o">,</span> <span class="n">auth</span><span class="o">);</span>
 </pre></div>
+
+<p><strong>More Samples</strong></p>
 
 <p>If you want to see more examples, just have a look at the JUnit TestCase (src/test/java/...).</p>
 
