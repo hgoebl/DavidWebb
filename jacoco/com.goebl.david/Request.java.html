@@ -260,25 +260,27 @@ public class Request {
      * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
      * The `interrupted` flag will be set to true in this case.
      *
-     * @param retryCount the number of retries, 0 means no retry, which is the default.
+     * @param retryCount This parameter holds the number of retries that will be made AFTER the
+     *                   initial send in the event of a error. If an error occurs on the last
+     *                   attempt an exception will be raised.&lt;br/&gt;
      *                   Values &gt; 10 are ignored (we're not gatling)
      * @param waitExponential sleep during retry attempts (exponential backoff).
-     *                        For retry-counts more than 2, &lt;tt&gt;true&lt;/tt&gt; is mandatory.
+     *                        For retry-counts more than 3, &lt;tt&gt;true&lt;/tt&gt; is mandatory.
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request retry(int retryCount, boolean waitExponential) {
-<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
-<span class="nc" id="L271">            retryCount = 0;</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
+<span class="nc" id="L273">            retryCount = 0;</span>
         }
-<span class="pc bpc" id="L273" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
-<span class="nc" id="L274">            retryCount = 10;</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
+<span class="nc" id="L276">            retryCount = 10;</span>
         }
-<span class="pc bpc" id="L276" title="1 of 4 branches missed.">        if (retryCount &gt;= 3 &amp;&amp; !waitExponential) {</span>
-<span class="fc" id="L277">            throw new IllegalArgumentException(&quot;retries &gt; 2 only valid with wait&quot;);</span>
+<span class="pc bpc" id="L278" title="1 of 4 branches missed.">        if (retryCount &gt; 3 &amp;&amp; !waitExponential) {</span>
+<span class="fc" id="L279">            throw new IllegalArgumentException(&quot;retries &gt; 3 only valid with wait&quot;);</span>
         }
-<span class="fc" id="L279">        this.retryCount = retryCount;</span>
-<span class="fc" id="L280">        this.waitExponential = waitExponential;</span>
-<span class="fc" id="L281">        return this;</span>
+<span class="fc" id="L281">        this.retryCount = retryCount;</span>
+<span class="fc" id="L282">        this.waitExponential = waitExponential;</span>
+<span class="fc" id="L283">        return this;</span>
     }
 
     /**
@@ -286,7 +288,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;String&lt;/code&gt;
      */
     public Response&lt;String&gt; asString() {
-<span class="fc" id="L289">        return webb.execute(this, String.class);</span>
+<span class="fc" id="L291">        return webb.execute(this, String.class);</span>
     }
 
     /**
@@ -294,7 +296,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONObject&lt;/code&gt;
      */
     public Response&lt;JSONObject&gt; asJsonObject() {
-<span class="fc" id="L297">        return webb.execute(this, JSONObject.class);</span>
+<span class="fc" id="L299">        return webb.execute(this, JSONObject.class);</span>
     }
 
     /**
@@ -302,7 +304,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONArray&lt;/code&gt;
      */
     public Response&lt;JSONArray&gt; asJsonArray() {
-<span class="fc" id="L305">        return webb.execute(this, JSONArray.class);</span>
+<span class="fc" id="L307">        return webb.execute(this, JSONArray.class);</span>
     }
 
     /**
@@ -310,7 +312,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;byte[]&lt;/code&gt;
      */
     public Response&lt;byte[]&gt; asBytes() {
-<span class="fc" id="L313">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
+<span class="fc" id="L315">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
     }
 
     /**
@@ -318,7 +320,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
      */
     public Response&lt;Void&gt; asVoid() {
-<span class="fc" id="L321">        return webb.execute(this, Void.class);</span>
+<span class="fc" id="L323">        return webb.execute(this, Void.class);</span>
     }
 
 }

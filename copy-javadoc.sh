@@ -9,3 +9,9 @@ cp -r ../DavidWebb/target/apidocs/ .
 rm -rf jacoco/
 mkdir jacoco
 cp -r ../DavidWebb/target/site/jacoco/ .
+
+# github pages do not deliver .resources directory
+if [ ! -d jacoco/resources ]; then
+    mv jacoco/.resources jacoco/resources
+fi
+find jacoco/ -name "*.html" -exec sed -i 's/\.resources/resources/g' {} \;
