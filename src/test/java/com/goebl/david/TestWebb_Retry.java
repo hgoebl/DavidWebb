@@ -18,13 +18,13 @@ public class TestWebb_Retry extends AbstractTestWebb {
 
     public void testRetryCountArguments() throws Exception {
         webb.get("/simple.txt")
-                .retry(2, false)
+                .retry(3, false)
                 .ensureSuccess()
                 .asString()
                 .getBody();
         try {
             webb.get("/simple.txt")
-                    .retry(3, false)
+                    .retry(4, false)
                     .ensureSuccess()
                     .asString()
                     .getBody();

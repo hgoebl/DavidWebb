@@ -260,10 +260,12 @@ public class Request {
      * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
      * The `interrupted` flag will be set to true in this case.
      *
-     * @param retryCount the number of retries, 0 means no retry, which is the default.
+     * @param retryCount This parameter holds the number of retries that will be made AFTER the
+     *                   initial send in the event of a error. If an error occurs on the last
+     *                   attempt an exception will be raised.<br/>
      *                   Values > 10 are ignored (we're not gatling)
      * @param waitExponential sleep during retry attempts (exponential backoff).
-     *                        For retry-counts more than 2, <tt>true</tt> is mandatory.
+     *                        For retry-counts more than 3, <tt>true</tt> is mandatory.
      * @return <code>this</code> for method chaining (fluent API)
      */
     public Request retry(int retryCount, boolean waitExponential) {
@@ -273,8 +275,8 @@ public class Request {
         if (retryCount > 10) {
             retryCount = 10;
         }
-        if (retryCount >= 3 && !waitExponential) {
-            throw new IllegalArgumentException("retries > 2 only valid with wait");
+        if (retryCount > 3 && !waitExponential) {
+            throw new IllegalArgumentException("retries > 3 only valid with wait");
         }
         this.retryCount = retryCount;
         this.waitExponential = waitExponential;
