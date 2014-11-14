@@ -50,7 +50,7 @@ public class Webb {
     HostnameVerifier hostnameVerifier;
     RetryManager retryManager;
 
-    private Webb() {}
+    protected Webb() {}
 
     /**
      * Create an instance which can be reused for multiple requests in the same Thread.
