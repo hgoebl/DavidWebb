@@ -31,7 +31,7 @@ import java.util.zip.InflaterInputStream;
  */
 public class WebbUtils {
 
-    private WebbUtils() {}
+    protected WebbUtils() {}
 
     /**
      * Convert a Map to a query string.
