@@ -19,7 +19,7 @@ import java.util.Map;
  */
 public class Request {
     public enum Method {
-        GET, POST, PUT, DELETE
+        GET, POST, PUT, DELETE, PATCH
     }
 
     private final Webb webb;

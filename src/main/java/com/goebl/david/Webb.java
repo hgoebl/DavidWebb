@@ -255,6 +255,16 @@ public class Webb {
         return new Request(this, Request.Method.DELETE, buildPath(pathOrUri));
     }
 
+    /**
+     * Creates a <b>PATCH</b> HTTP request with the specified absolute or relative URI.
+     * @param pathOrUri the URI (will be concatenated with global URI or default URI without further checking)
+     *                  If it starts already with http:// or https:// this URI is taken and all base URIs are ignored.
+     * @return the created Request object (in fact it's more a builder than a real request object)
+     */
+    public Request patch(String pathOrUri) {
+        return new Request(this, Request.Method.PATCH, buildPath(pathOrUri));
+    }
+
     private String buildPath(String pathOrUri) {
         if (pathOrUri == null) {
             throw new IllegalArgumentException("pathOrUri must not be null");

@@ -28,6 +28,10 @@ module.exports = function registerRoutes(app) {
         res.send(204);
     });
 
+    app.patch('/simple.json', function (req, res) {
+        res.json(req.body);
+    });
+
     app.get('/no-content', function (req, res) {
         res.send(204);
     });

@@ -138,6 +138,24 @@ public class TestWebb extends AbstractTestWebb {
         assertEquals("No Content", response.getResponseMessage());
     }
 
+    public void testSimplePatchJson() throws Exception {
+        JSONObject payload = new JSONObject();
+        payload.put("p1", SIMPLE_ASCII);
+        payload.put("p2", COMPLEX_UTF8);
+
+        Response<JSONObject> response = webb
+                .patch("/simple.json")
+                .body(payload)
+                .asJsonObject();
+
+        assertEquals(200, response.getStatusCode());
+        assertTrue(response.getContentType().startsWith(Webb.APP_JSON));
+        JSONObject result = response.getBody();
+        assertNotNull(result);
+        assertEquals(SIMPLE_ASCII, result.getString("p1"));
+        assertEquals(COMPLEX_UTF8, result.getString("p2"));
+    }
+
     public void testNoContent() throws Exception {
 
         Response<Void> responseAsVoid = webb
