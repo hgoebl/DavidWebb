@@ -62,10 +62,10 @@ public class Webb {
 
     /**
      * Set the value for a named header which is valid for all requests in the running JVM.
-     * <br/>
+     * <br>
      * The value can be overwritten by calling {@link Webb#setDefaultHeader(String, Object)} and/or
      * {@link com.goebl.david.Request#header(String, Object)}.
-     * <br/>
+     * <br>
      * For the supported types for values see {@link Request#header(String, Object)}.
      *
      * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
@@ -84,7 +84,7 @@ public class Webb {
 
     /**
      * Set the base URI for all requests starting in this JVM from now.
-     * <br/>
+     * <br>
      * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
      * the URIs relatively. The value is only taken when {@link Webb#setBaseUri(String)} is not called or
      * called with <code>null</code>.
@@ -108,9 +108,9 @@ public class Webb {
 
     /**
      * Set the timeout in milliseconds for connecting the server.
-     * <br/>
+     * <br>
      * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 10 seconds, since no
-     * timeout is odd.<br/>
+     * timeout is odd.<br>
      * Can be overwritten for each Request with {@link com.goebl.david.Request#connectTimeout(int)}.
      * @param globalConnectTimeout the new timeout or <code>&lt;= 0</code> to use HttpURLConnection default timeout.
      */
@@ -120,9 +120,9 @@ public class Webb {
 
     /**
      * Set the timeout in milliseconds for getting response from the server.
-     * <br/>
+     * <br>
      * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 3 minutes, since no
-     * timeout is odd.<br/>
+     * timeout is odd.<br>
      * Can be overwritten for each Request with {@link com.goebl.david.Request#readTimeout(int)}.
      * @param globalReadTimeout the new timeout or <code>&lt;= 0</code> to use HttpURLConnection default timeout.
      */
@@ -133,7 +133,7 @@ public class Webb {
     /**
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)">
      *     </a>.
-     * <br/>
+     * <br>
      * Use this method to set the behaviour for all requests created by this instance when receiving redirect responses.
      * You can overwrite the setting for a single request by calling {@link Request#followRedirects(boolean)}.
      * @param auto <code>true</code> to automatically follow redirects (HTTP status code 3xx).
@@ -161,7 +161,7 @@ public class Webb {
 
     /**
      * Set the base URI for all requests created from this instance.
-     * <br/>
+     * <br>
      * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
      * the URIs relatively. The value takes precedence over the value set in {@link #setGlobalBaseUri(String)}.
      *
@@ -183,10 +183,10 @@ public class Webb {
 
     /**
      * Set the value for a named header which is valid for all requests created by this instance.
-     * <br/>
+     * <br>
      * The value takes precedence over {@link Webb#setGlobalHeader(String, Object)} but can be overwritten by
      * {@link com.goebl.david.Request#header(String, Object)}.
-     * <br/>
+     * <br>
      * For the supported types for values see {@link Request#header(String, Object)}.
      *
      * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).

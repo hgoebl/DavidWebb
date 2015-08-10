@@ -10,10 +10,10 @@ import java.util.Map;
 
 /**
  * Builder for an HTTP request.
- * <br/>
+ * <br>
  * You can some "real-life" usage examples at
  * <a href="https://github.com/hgoebl/DavidWebb">github.com/hgoebl/DavidWebb</a>.
- * <br/>
+ * <br>
  *
  * @author hgoebl
  */
@@ -49,7 +49,7 @@ public class Request {
 
     /**
      * Set (or overwrite) a parameter.
-     * <br/>
+     * <br>
      * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
      * with MIME-type <code>application/x-www-form-urlencoded</code>,
      * @param name the name of the parameter (it's better to use only contain ASCII characters)
@@ -76,11 +76,11 @@ public class Request {
 
     /**
      * Set (or overwrite) a HTTP header value.
-     * <br/>
+     * <br>
      * Setting a header this way has the highest precedence and overrides a header value set on a {@link Webb}
      * instance ({@link Webb#setDefaultHeader(String, Object)}) or a global header
      * ({@link Webb#setGlobalHeader(String, Object)}).
-     * <br/>
+     * <br>
      * Using <code>null</code> or empty String is not allowed for name and value.
      *
      * @param name name of the header (HTTP-headers are not case-sensitive, but if you want to override your own
@@ -104,11 +104,11 @@ public class Request {
 
     /**
      * Set the payload for the request.
-     * <br/>
+     * <br>
      * Using this method together with {@link #param(String, Object)} has the effect of <code>body</code> being
      * ignored without notice. The method can be called more than once: the value will be stored and converted
      * to bytes later.
-     * <br/>
+     * <br>
      * Following types are supported for the body:
      * <ul>
      *     <li>
@@ -138,7 +138,7 @@ public class Request {
      *     <li>
      *         {@link java.io.InputStream}, HTTP header 'Content-Type' will be set to BINARY, if not set;
      *         Similar to <code>File</code>. Content-Length cannot be set (which has some drawbacks compared
-     *         to knowing the size of the body in advance).<br/>
+     *         to knowing the size of the body in advance).<br>
      *         <strong>You have to care for closing the stream!</strong>
      *     </li>
      * </ul>
@@ -156,12 +156,12 @@ public class Request {
     }
 
     /**
-     * Enable compression for uploaded data.<br/>
-     * <br/>
+     * Enable compression for uploaded data.<br>
+     * <br>
      * Before you enable compression, you should find out, whether the web server you are talking to
      * supports this. As compression has not to be implemented for HTTP and standard RFC2616 had only
      * compression for downloaded resources in mind, in special cases it makes absolutely sense to
-     * compress the posted data.<br/>
+     * compress the posted data.<br>
      * Your web application should inspect the 'Content-Encoding' header and implement the compression
      * token provided by this client. By now only 'gzip' encoding token is used. If you need 'deflate'
      * create an issue.
@@ -176,7 +176,7 @@ public class Request {
     /**
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#useCaches">
      *     URLConnection.useCaches</a>
-     * <br/>
+     * <br>
      * If you don't want your requests delivered from a cache, you don't have to call this method,
      * because <code>false</code> is the default.
      *
@@ -226,7 +226,7 @@ public class Request {
     /**
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)">
      *     </a>.
-     * <br/>
+     * <br>
      * Use this method to set the behaviour for this single request when receiving redirect responses.
      * If you want to change the behaviour for all your requests, call {@link Webb#setFollowRedirects(boolean)}.
      * @param auto <code>true</code> to automatically follow redirects (HTTP status code 3xx).
@@ -240,8 +240,8 @@ public class Request {
 
     /**
      * By calling this method, the HTTP status code is checked and a <code>WebbException</code> is thrown if
-     * the status code is not something like 2xx.<br/>
-     * <br/>
+     * the status code is not something like 2xx.<br>
+     * <br>
      * Be careful! If you request resources e.g. with {@link #ifModifiedSince(long)}, an exception will also be
      * thrown in the positive case of <code>304 Not Modified</code>.
      *
@@ -254,7 +254,7 @@ public class Request {
 
     /**
      * Set the number of retries after the first request failed.
-     * <br/>
+     * <br>
      * When `waitExponential` is set, then there will be {@link Thread#sleep(long)} between
      * the retries. If the thread is interrupted, there will be an `InterruptedException`
      * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
@@ -262,8 +262,8 @@ public class Request {
      *
      * @param retryCount This parameter holds the number of retries that will be made AFTER the
      *                   initial send in the event of a error. If an error occurs on the last
-     *                   attempt an exception will be raised.<br/>
-     *                   Values > 10 are ignored (we're not gatling)
+     *                   attempt an exception will be raised.<br>
+     *                   Values &gt; 10 are ignored (we're not gatling)
      * @param waitExponential sleep during retry attempts (exponential backoff).
      *                        For retry-counts more than 3, <tt>true</tt> is mandatory.
      * @return <code>this</code> for method chaining (fluent API)

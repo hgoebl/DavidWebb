@@ -38,7 +38,7 @@ public class WebbUtils {
      * @param values the map with the values
      *               <code>null</code> will be encoded as empty string, all other objects are converted to
      *               String by calling its <code>toString()</code> method.
-     * @return e.g. "key1=value&key2=&email=max%40example.com"
+     * @return e.g. "key1=value&amp;key2=&amp;email=max%40example.com"
      */
     public static String queryString(Map<String, Object> values) {
         StringBuilder sbuf = new StringBuilder();
@@ -100,7 +100,7 @@ public class WebbUtils {
 
     /**
      * Read an <code>InputStream</code> into <code>byte[]</code> until EOF.
-     * <br/>
+     * <br>
      * Does not close the InputStream!
      *
      * @param is the stream to read the bytes from
@@ -121,7 +121,7 @@ public class WebbUtils {
 
     /**
      * Copy complete content of <code>InputStream</code> to <code>OutputStream</code> until EOF.
-     * <br/>
+     * <br>
      * Does not close the InputStream nor OutputStream!
      *
      * @param input the stream to read the bytes from
@@ -138,9 +138,9 @@ public class WebbUtils {
 
     /**
      * Creates a new instance of a <code>DateFormat</code> for RFC1123 compliant dates.
-     * <br/>
+     * <br>
      * Should be stored for later use but be aware that this DateFormat is not Thread-safe!
-     * <br/>
+     * <br>
      * If you have to deal with dates in this format with JavaScript, it's easy, because the JavaScript
      * Date object has a constructor for strings formatted this way.
      * @return a new instance

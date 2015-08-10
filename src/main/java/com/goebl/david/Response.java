@@ -41,8 +41,8 @@ public class Response<T> {
     }
 
     /**
-     * Get the body which was returned in case of error (HTTP-Code >= 400).
-     * <br/>
+     * Get the body which was returned in case of error (HTTP-Code &gt;= 400).
+     * <br>
      * The type of the error body depends on following factors:
      * <ul>
      *     <li>
@@ -99,7 +99,7 @@ public class Response<T> {
 
     /**
      * Returns the MIME-type of the response body.
-     * <br/>
+     * <br>
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getContentType()">
      *     URLConnection.getContentType()</a>
      *
@@ -111,7 +111,7 @@ public class Response<T> {
 
     /**
      * Returns the date when the request was created (server-time).
-     * <br/>
+     * <br>
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getDate()">
      *     URLConnection.getDate()</a>
      *
@@ -123,7 +123,7 @@ public class Response<T> {
 
     /**
      * Returns the value of the expires header field.
-     * <br/>
+     * <br>
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getExpiration()">
      *     URLConnection.getExpiration()</a>
      *
@@ -135,7 +135,7 @@ public class Response<T> {
 
     /**
      * Returns the value of the last-modified header field.
-     * <br/>
+     * <br>
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getLastModified()">
      *     URLConnection.getLastModified()</a>
      *
@@ -147,7 +147,7 @@ public class Response<T> {
 
     /**
      * Returns the value of the named header field.
-     * <br/>
+     * <br>
      * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderField(java.lang.String)">
      *     URLConnection.getHeaderField()</a>
      *
@@ -160,8 +160,8 @@ public class Response<T> {
 
     /**
      * Returns the value of the named field parsed as date (Millis since 1970).
-     * <br/>
-     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String, long)">
+     * <br>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String,+long)">
      *     URLConnection.getHeaderFieldDate()</a>
      *
      * @param field name of the header field
@@ -174,8 +174,8 @@ public class Response<T> {
 
     /**
      * Returns the value of the named field parsed as a number.
-     * <br/>
-     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String, int)">
+     * <br>
+     * See <a href="http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String,+int)">
      *     URLConnection.getHeaderFieldInt()</a>
      *
      * @param field name of the header field
@@ -196,7 +196,7 @@ public class Response<T> {
 
     /**
      * A shortcut to check for successful status codes and throw exception in case of non-2xx status codes.
-     * <br/>
+     * <br>
      * In many cases you will call {@link com.goebl.david.Request#ensureSuccess()} instead of this method.
      * But there might be cases where you want to inspect the response-object first (check header values) and
      * then have a short exit where the response-code is not suitable for further normal processing.

@@ -5,7 +5,7 @@ import java.net.SocketTimeoutException;
 
 /**
  * Decides whether a request should be retried or not.
- * <br/>
+ * <br>
  * If you need other behaviour, just extend this class.
  *
  * @since 27.04.14.
@@ -29,7 +29,7 @@ public class RetryManager {
 
     /**
      * Analyzes whether the cause of an exception is worth retrying the request.
-     * <br/>
+     * <br>
      * This is not covering all situations and in case of doubt the exception is considered not
      * recoverable. @YOU: if you find a case where an exception is recoverable, create an issue!
      * @param webbException the exception to analyze
