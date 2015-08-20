@@ -105,7 +105,7 @@ public class WebbUtils {
      *
      * @param is the stream to read the bytes from
      * @return all read bytes as an array
-     * @throws IOException
+     * @throws IOException when read or write operation fails
      */
     public static byte[] readBytes(InputStream is) throws IOException {
         if (is == null) {
@@ -126,7 +126,7 @@ public class WebbUtils {
      *
      * @param input the stream to read the bytes from
      * @param output the stream to write the bytes to
-     * @throws IOException
+     * @throws IOException when read or write operation fails
      */
     public static void copyStream(InputStream input, OutputStream output) throws IOException {
         byte[] buffer = new byte[1024];

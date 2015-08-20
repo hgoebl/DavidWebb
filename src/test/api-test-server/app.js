@@ -46,3 +46,19 @@ require('./routes')(app);
 http.createServer(app).listen(config.app.port, function () {
     console.log('Express server listening on port %d', config.app.port);
 });
+
+// ---- https server ----
+// see http://blog.matoski.com/articles/node-express-generate-ssl/
+
+var https = require('https'),
+    fs = require('fs');
+
+https.createServer({
+    key: fs.readFileSync('./ssl/server.key'),
+    cert: fs.readFileSync('./ssl/server.crt'),
+    ca: fs.readFileSync('./ssl/ca.crt'),
+    requestCert: true,
+    rejectUnauthorized: false
+}, app).listen(config.app.sslPort, function () {
+    console.log('Secure Express server on port %d', config.app.sslPort);
+});
