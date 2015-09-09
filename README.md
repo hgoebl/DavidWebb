@@ -17,7 +17,7 @@ If you have to call a RESTful Webservice from Java, especially if you are on And
 
 ## Solved
 
-**DavidWebb** is a small wrapper around
+**DavidWebb** is a paper-thin wrapper around
 [HttpURLConnection](http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html).
 It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
 lightweight (~18 KB jar) and super-easy to use.
@@ -70,7 +70,7 @@ webb.setDefaultHeader(Webb.HDR_USER_AGENT, Const.UA);
 Response<JSONObject> response = webb
         .post("/session")
         .param("authentication", createAuthentication(syncPreferences))
-        .param("deviceId", syncPrefs.getDeviceId())
+        .param("deviceId", syncPreferences.getDeviceId())
         .ensureSuccess()
         .asJsonObject();
 
@@ -83,7 +83,7 @@ accessToken.validUntil = apiResult.getLong("validUntil");
 webb.setDefaultHeader(HDR_ACCESS_TOKEN, accessToken.token);
 
 JSONObject sync = webb.post("/startSync")
-        .param("lastSync", syncPrefs.getLastSync())
+        .param("lastSync", syncPreferences.getLastSync())
         .ensureSuccess()
         .asJsonObject()
         .getBody();
@@ -200,6 +200,7 @@ Not using Maven/Gradle? - Then you can download the plain JAR from following lin
 
 If **DavidWebb** is too lightweight and you're missing features, you can have a look at:
 
+  * [OkHttp](http://square.github.io/okhttp/) An HTTP & SPDY client for Android and Java applications
   * [basic-http-client](https://code.google.com/p/basic-http-client/)
     Basic HTTP client w/ Android AsyncTask wrapper
   * [RESTDroid](https://github.com/PCreations/RESTDroid)
@@ -212,10 +213,10 @@ If **DavidWebb** is too lightweight and you're missing features, you can have a 
     Lightweight HTTP Request Library
   * [Restlet Framework](http://restlet.org/)
     The leading web API framework for Java
-  * [Volley](https://android.googlesource.com/platform/frameworks/volley) and
-    [Volley Example](http://www.technotalkative.com/android-volley-library-example/)
-    IMHO: Probably quite good, but where's the documentation?
+  * [Volley](https://developer.android.com/training/volley/index.html) is an HTTP library that makes networking for
+    Android apps easier and most importantly, faster.
   * [DataDroid](http://datadroid.foxykeep.com/) - an Android library for Data Management
+  * [google-http-java-client](https://github.com/google/google-http-java-client) Google HTTP Client Library for Java
   * [More Alternatives (on RoboSpice)](https://github.com/octo-online/robospice#alternatives-to-robospice-)
   * (tell me if I missed your award-winning REST-client library!)
 
