@@ -50,7 +50,7 @@ public class Webb {
     HostnameVerifier hostnameVerifier;
     RetryManager retryManager;
 
-<span class="fc" id="L53">    private Webb() {}</span>
+<span class="fc" id="L53">    protected Webb() {}</span>
 
     /**
      * Create an instance which can be reused for multiple requests in the same Thread.
@@ -62,10 +62,10 @@ public class Webb {
 
     /**
      * Set the value for a named header which is valid for all requests in the running JVM.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * The value can be overwritten by calling {@link Webb#setDefaultHeader(String, Object)} and/or
      * {@link com.goebl.david.Request#header(String, Object)}.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * For the supported types for values see {@link Request#header(String, Object)}.
      *
      * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
@@ -84,7 +84,7 @@ public class Webb {
 
     /**
      * Set the base URI for all requests starting in this JVM from now.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
      * the URIs relatively. The value is only taken when {@link Webb#setBaseUri(String)} is not called or
      * called with &lt;code&gt;null&lt;/code&gt;.
@@ -108,9 +108,9 @@ public class Webb {
 
     /**
      * Set the timeout in milliseconds for connecting the server.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 10 seconds, since no
-     * timeout is odd.&lt;br/&gt;
+     * timeout is odd.&lt;br&gt;
      * Can be overwritten for each Request with {@link com.goebl.david.Request#connectTimeout(int)}.
      * @param globalConnectTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
      */
@@ -120,9 +120,9 @@ public class Webb {
 
     /**
      * Set the timeout in milliseconds for getting response from the server.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * In contrast to {@link java.net.HttpURLConnection}, we use a default timeout of 3 minutes, since no
-     * timeout is odd.&lt;br/&gt;
+     * timeout is odd.&lt;br&gt;
      * Can be overwritten for each Request with {@link com.goebl.david.Request#readTimeout(int)}.
      * @param globalReadTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
      */
@@ -133,7 +133,7 @@ public class Webb {
     /**
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)&quot;&gt;
      *     &lt;/a&gt;.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Use this method to set the behaviour for all requests created by this instance when receiving redirect responses.
      * You can overwrite the setting for a single request by calling {@link Request#followRedirects(boolean)}.
      * @param auto &lt;code&gt;true&lt;/code&gt; to automatically follow redirects (HTTP status code 3xx).
@@ -161,7 +161,7 @@ public class Webb {
 
     /**
      * Set the base URI for all requests created from this instance.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * For all requests this value is taken as a kind of prefix for the effective URI, so you can address
      * the URIs relatively. The value takes precedence over the value set in {@link #setGlobalBaseUri(String)}.
      *
@@ -183,10 +183,10 @@ public class Webb {
 
     /**
      * Set the value for a named header which is valid for all requests created by this instance.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * The value takes precedence over {@link Webb#setGlobalHeader(String, Object)} but can be overwritten by
      * {@link com.goebl.david.Request#header(String, Object)}.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * For the supported types for values see {@link Request#header(String, Object)}.
      *
      * @param name name of the header (regarding HTTP it is not case-sensitive, but here case is important).
@@ -311,10 +311,10 @@ public class Webb {
 
         try {
 <span class="fc" id="L313">            String uri = request.uri;</span>
-<span class="pc bpc" id="L314" title="1 of 8 branches missed.">            if (request.method == Request.Method.GET &amp;&amp;</span>
-                    !uri.contains(&quot;?&quot;) &amp;&amp;
+<span class="fc bfc" id="L314" title="All 2 branches covered.">            if (request.method == Request.Method.GET &amp;&amp;</span>
+<span class="fc bfc" id="L315" title="All 4 branches covered.">                    !uri.contains(&quot;?&quot;) &amp;&amp;</span>
                     request.params != null &amp;&amp;
-                    !request.params.isEmpty()) {
+<span class="pc bpc" id="L317" title="1 of 2 branches missed.">                    !request.params.isEmpty()) {</span>
 <span class="fc" id="L318">                uri += &quot;?&quot; + WebbUtils.queryString(request.params);</span>
             }
 <span class="fc" id="L320">            URL apiUrl = new URL(uri);</span>
@@ -392,11 +392,11 @@ public class Webb {
     private void setTimeouts(Request request, HttpURLConnection connection) {
 <span class="pc bpc" id="L393" title="1 of 4 branches missed.">        if (request.connectTimeout != null || connectTimeout != null) {</span>
 <span class="fc bfc" id="L394" title="All 2 branches covered.">            connection.setConnectTimeout(</span>
-                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);
+<span class="fc" id="L395">                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);</span>
         }
 <span class="pc bpc" id="L397" title="1 of 4 branches missed.">        if (request.readTimeout != null || readTimeout != null) {</span>
 <span class="fc bfc" id="L398" title="All 2 branches covered.">            connection.setReadTimeout(</span>
-                    request.readTimeout != null ? request.readTimeout : readTimeout);
+<span class="fc" id="L399">                    request.readTimeout != null ? request.readTimeout : readTimeout);</span>
         }
 <span class="fc" id="L401">    }</span>
 
@@ -413,7 +413,7 @@ public class Webb {
 <span class="fc" id="L413">            os.write(body);</span>
 <span class="fc" id="L414">            os.flush();</span>
         } finally {
-<span class="pc bpc" id="L416" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc bpc" id="L416" title="2 of 4 branches missed.">            if (os != null) {</span>
 <span class="pc" id="L417">                try { os.close(); } catch (Exception ignored) {}</span>
             }
         }
@@ -486,4 +486,4 @@ public class Webb {
     }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

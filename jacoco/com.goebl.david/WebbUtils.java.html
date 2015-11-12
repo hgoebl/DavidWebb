@@ -31,14 +31,14 @@ import java.util.zip.InflaterInputStream;
  */
 public class WebbUtils {
 
-<span class="nc" id="L34">    private WebbUtils() {}</span>
+<span class="nc" id="L34">    protected WebbUtils() {}</span>
 
     /**
      * Convert a Map to a query string.
      * @param values the map with the values
      *               &lt;code&gt;null&lt;/code&gt; will be encoded as empty string, all other objects are converted to
      *               String by calling its &lt;code&gt;toString()&lt;/code&gt; method.
-     * @return e.g. &quot;key1=value&amp;key2=&amp;email=max%40example.com&quot;
+     * @return e.g. &quot;key1=value&amp;amp;key2=&amp;amp;email=max%40example.com&quot;
      */
     public static String queryString(Map&lt;String, Object&gt; values) {
 <span class="fc" id="L44">        StringBuilder sbuf = new StringBuilder();</span>
@@ -100,12 +100,12 @@ public class WebbUtils {
 
     /**
      * Read an &lt;code&gt;InputStream&lt;/code&gt; into &lt;code&gt;byte[]&lt;/code&gt; until EOF.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Does not close the InputStream!
      *
      * @param is the stream to read the bytes from
      * @return all read bytes as an array
-     * @throws IOException
+     * @throws IOException when read or write operation fails
      */
     public static byte[] readBytes(InputStream is) throws IOException {
 <span class="fc bfc" id="L111" title="All 2 branches covered.">        if (is == null) {</span>
@@ -121,12 +121,12 @@ public class WebbUtils {
 
     /**
      * Copy complete content of &lt;code&gt;InputStream&lt;/code&gt; to &lt;code&gt;OutputStream&lt;/code&gt; until EOF.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Does not close the InputStream nor OutputStream!
      *
      * @param input the stream to read the bytes from
      * @param output the stream to write the bytes to
-     * @throws IOException
+     * @throws IOException when read or write operation fails
      */
     public static void copyStream(InputStream input, OutputStream output) throws IOException {
 <span class="fc" id="L132">        byte[] buffer = new byte[1024];</span>
@@ -138,9 +138,9 @@ public class WebbUtils {
 
     /**
      * Creates a new instance of a &lt;code&gt;DateFormat&lt;/code&gt; for RFC1123 compliant dates.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Should be stored for later use but be aware that this DateFormat is not Thread-safe!
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * If you have to deal with dates in this format with JavaScript, it's easy, because the JavaScript
      * Date object has a constructor for strings formatted this way.
      * @return a new instance
@@ -210,13 +210,13 @@ public class WebbUtils {
 <span class="fc bfc" id="L210" title="All 2 branches covered.">        } else if (request.payload instanceof JSONObject) {</span>
 <span class="fc" id="L211">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
 <span class="pc bpc" id="L212" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
-                    ? ((JSONObject) request.payload).toString(jsonIndentFactor)
-                    : request.payload.toString();
+<span class="pc" id="L213">                    ? ((JSONObject) request.payload).toString(jsonIndentFactor)</span>
+<span class="fc" id="L214">                    : request.payload.toString();</span>
 <span class="fc bfc" id="L215" title="All 2 branches covered.">        } else if (request.payload instanceof JSONArray) {</span>
 <span class="fc" id="L216">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
 <span class="pc bpc" id="L217" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
-                    ? ((JSONArray) request.payload).toString(jsonIndentFactor)
-                    : request.payload.toString();
+<span class="pc" id="L218">                    ? ((JSONArray) request.payload).toString(jsonIndentFactor)</span>
+<span class="fc" id="L219">                    : request.payload.toString();</span>
 <span class="fc bfc" id="L220" title="All 2 branches covered.">        } else if (request.payload instanceof byte[]) {</span>
 <span class="fc" id="L221">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);</span>
 <span class="fc" id="L222">            requestBody = (byte[]) request.payload;</span>
@@ -363,4 +363,4 @@ public class WebbUtils {
 <span class="nc" id="L363">    }</span>
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

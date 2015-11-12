@@ -41,8 +41,8 @@ public class Response&lt;T&gt; {
     }
 
     /**
-     * Get the body which was returned in case of error (HTTP-Code &gt;= 400).
-     * &lt;br/&gt;
+     * Get the body which was returned in case of error (HTTP-Code &amp;gt;= 400).
+     * &lt;br&gt;
      * The type of the error body depends on following factors:
      * &lt;ul&gt;
      *     &lt;li&gt;
@@ -99,7 +99,7 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the MIME-type of the response body.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getContentType()&quot;&gt;
      *     URLConnection.getContentType()&lt;/a&gt;
      *
@@ -111,7 +111,7 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the date when the request was created (server-time).
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getDate()&quot;&gt;
      *     URLConnection.getDate()&lt;/a&gt;
      *
@@ -123,7 +123,7 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the value of the expires header field.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getExpiration()&quot;&gt;
      *     URLConnection.getExpiration()&lt;/a&gt;
      *
@@ -135,7 +135,7 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the value of the last-modified header field.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getLastModified()&quot;&gt;
      *     URLConnection.getLastModified()&lt;/a&gt;
      *
@@ -147,7 +147,7 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the value of the named header field.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderField(java.lang.String)&quot;&gt;
      *     URLConnection.getHeaderField()&lt;/a&gt;
      *
@@ -160,8 +160,8 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the value of the named field parsed as date (Millis since 1970).
-     * &lt;br/&gt;
-     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String, long)&quot;&gt;
+     * &lt;br&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldDate(java.lang.String,+long)&quot;&gt;
      *     URLConnection.getHeaderFieldDate()&lt;/a&gt;
      *
      * @param field name of the header field
@@ -174,8 +174,8 @@ public class Response&lt;T&gt; {
 
     /**
      * Returns the value of the named field parsed as a number.
-     * &lt;br/&gt;
-     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String, int)&quot;&gt;
+     * &lt;br&gt;
+     * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#getHeaderFieldInt(java.lang.String,+int)&quot;&gt;
      *     URLConnection.getHeaderFieldInt()&lt;/a&gt;
      *
      * @param field name of the header field
@@ -196,7 +196,7 @@ public class Response&lt;T&gt; {
 
     /**
      * A shortcut to check for successful status codes and throw exception in case of non-2xx status codes.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * In many cases you will call {@link com.goebl.david.Request#ensureSuccess()} instead of this method.
      * But there might be cases where you want to inspect the response-object first (check header values) and
      * then have a short exit where the response-code is not suitable for further normal processing.
@@ -207,4 +207,4 @@ public class Response&lt;T&gt; {
         }
 <span class="fc" id="L208">    }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

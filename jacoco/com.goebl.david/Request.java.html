@@ -10,10 +10,10 @@ import java.util.Map;
 
 /**
  * Builder for an HTTP request.
- * &lt;br/&gt;
+ * &lt;br&gt;
  * You can some &quot;real-life&quot; usage examples at
  * &lt;a href=&quot;https://github.com/hgoebl/DavidWebb&quot;&gt;github.com/hgoebl/DavidWebb&lt;/a&gt;.
- * &lt;br/&gt;
+ * &lt;br&gt;
  *
  * @author hgoebl
  */
@@ -49,7 +49,7 @@ public class Request {
 
     /**
      * Set (or overwrite) a parameter.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
      * with MIME-type &lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;,
      * @param name the name of the parameter (it's better to use only contain ASCII characters)
@@ -66,21 +66,38 @@ public class Request {
     }
 
     /**
+     * Set (or overwrite) many parameters via a map.
+     * &lt;br&gt;
+     * @param valueByName a Map of name-value pairs,&lt;br&gt;
+     *  the name of the parameter (it's better to use only contain ASCII characters)&lt;br&gt;
+     *  the value of the parameter; &lt;code&gt;null&lt;/code&gt; will be converted to empty string, for all other
+     *              objects to &lt;code&gt;toString()&lt;/code&gt; method converts it to String
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     */
+    public Request params(Map&lt;String, Object&gt; valueByName) {
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (params == null) {</span>
+<span class="fc" id="L79">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+        }
+<span class="fc" id="L81">        params.putAll(valueByName);</span>
+<span class="fc" id="L82">        return this;</span>
+    }
+
+    /**
      * Get the URI of this request.
      *
      * @return URI
      */
     public String getUri() {
-<span class="fc" id="L74">        return uri;</span>
+<span class="fc" id="L91">        return uri;</span>
     }
 
     /**
      * Set (or overwrite) a HTTP header value.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Setting a header this way has the highest precedence and overrides a header value set on a {@link Webb}
      * instance ({@link Webb#setDefaultHeader(String, Object)}) or a global header
      * ({@link Webb#setGlobalHeader(String, Object)}).
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Using &lt;code&gt;null&lt;/code&gt; or empty String is not allowed for name and value.
      *
      * @param name name of the header (HTTP-headers are not case-sensitive, but if you want to override your own
@@ -95,20 +112,20 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request header(String name, Object value) {
-<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (headers == null) {</span>
-<span class="fc" id="L99">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (headers == null) {</span>
+<span class="fc" id="L116">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L101">        headers.put(name, value);</span>
-<span class="fc" id="L102">        return this;</span>
+<span class="fc" id="L118">        headers.put(name, value);</span>
+<span class="fc" id="L119">        return this;</span>
     }
 
     /**
      * Set the payload for the request.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Using this method together with {@link #param(String, Object)} has the effect of &lt;code&gt;body&lt;/code&gt; being
      * ignored without notice. The method can be called more than once: the value will be stored and converted
      * to bytes later.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Following types are supported for the body:
      * &lt;ul&gt;
      *     &lt;li&gt;
@@ -138,7 +155,7 @@ public class Request {
      *     &lt;li&gt;
      *         {@link java.io.InputStream}, HTTP header 'Content-Type' will be set to BINARY, if not set;
      *         Similar to &lt;code&gt;File&lt;/code&gt;. Content-Length cannot be set (which has some drawbacks compared
-     *         to knowing the size of the body in advance).&lt;br/&gt;
+     *         to knowing the size of the body in advance).&lt;br&gt;
      *         &lt;strong&gt;You have to care for closing the stream!&lt;/strong&gt;
      *     &lt;/li&gt;
      * &lt;/ul&gt;
@@ -147,21 +164,21 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request body(Object body) {
-<span class="fc bfc" id="L150" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
-<span class="fc" id="L151">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
+<span class="fc bfc" id="L167" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
+<span class="fc" id="L168">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
         }
-<span class="fc" id="L153">        this.payload = body;</span>
-<span class="fc bfc" id="L154" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
-<span class="fc" id="L155">        return this;</span>
+<span class="fc" id="L170">        this.payload = body;</span>
+<span class="fc bfc" id="L171" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
+<span class="fc" id="L172">        return this;</span>
     }
 
     /**
-     * Enable compression for uploaded data.&lt;br/&gt;
-     * &lt;br/&gt;
+     * Enable compression for uploaded data.&lt;br&gt;
+     * &lt;br&gt;
      * Before you enable compression, you should find out, whether the web server you are talking to
      * supports this. As compression has not to be implemented for HTTP and standard RFC2616 had only
      * compression for downloaded resources in mind, in special cases it makes absolutely sense to
-     * compress the posted data.&lt;br/&gt;
+     * compress the posted data.&lt;br&gt;
      * Your web application should inspect the 'Content-Encoding' header and implement the compression
      * token provided by this client. By now only 'gzip' encoding token is used. If you need 'deflate'
      * create an issue.
@@ -169,14 +186,14 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request compress() {
-<span class="fc" id="L172">        compress = true;</span>
-<span class="fc" id="L173">        return this;</span>
+<span class="fc" id="L189">        compress = true;</span>
+<span class="fc" id="L190">        return this;</span>
     }
 
     /**
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/URLConnection.html#useCaches&quot;&gt;
      *     URLConnection.useCaches&lt;/a&gt;
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * If you don't want your requests delivered from a cache, you don't have to call this method,
      * because &lt;code&gt;false&lt;/code&gt; is the default.
      *
@@ -184,8 +201,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request useCaches(boolean useCaches) {
-<span class="fc" id="L187">        this.useCaches = useCaches;</span>
-<span class="fc" id="L188">        return this;</span>
+<span class="fc" id="L204">        this.useCaches = useCaches;</span>
+<span class="fc" id="L205">        return this;</span>
     }
 
     /**
@@ -196,8 +213,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ifModifiedSince(long ifModifiedSince) {
-<span class="fc" id="L199">        this.ifModifiedSince = ifModifiedSince;</span>
-<span class="fc" id="L200">        return this;</span>
+<span class="fc" id="L216">        this.ifModifiedSince = ifModifiedSince;</span>
+<span class="fc" id="L217">        return this;</span>
     }
 
     /**
@@ -207,8 +224,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request connectTimeout(int connectTimeout) {
-<span class="fc" id="L210">        this.connectTimeout = connectTimeout;</span>
-<span class="fc" id="L211">        return this;</span>
+<span class="fc" id="L227">        this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L228">        return this;</span>
     }
 
     /**
@@ -219,14 +236,14 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request readTimeout(int readTimeout) {
-<span class="fc" id="L222">        this.readTimeout = readTimeout;</span>
-<span class="fc" id="L223">        return this;</span>
+<span class="fc" id="L239">        this.readTimeout = readTimeout;</span>
+<span class="fc" id="L240">        return this;</span>
     }
 
     /**
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)&quot;&gt;
      *     &lt;/a&gt;.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * Use this method to set the behaviour for this single request when receiving redirect responses.
      * If you want to change the behaviour for all your requests, call {@link Webb#setFollowRedirects(boolean)}.
      * @param auto &lt;code&gt;true&lt;/code&gt; to automatically follow redirects (HTTP status code 3xx).
@@ -234,27 +251,27 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request followRedirects(boolean auto) {
-<span class="fc" id="L237">        this.followRedirects = auto;</span>
-<span class="fc" id="L238">        return this;</span>
+<span class="fc" id="L254">        this.followRedirects = auto;</span>
+<span class="fc" id="L255">        return this;</span>
     }
 
     /**
      * By calling this method, the HTTP status code is checked and a &lt;code&gt;WebbException&lt;/code&gt; is thrown if
-     * the status code is not something like 2xx.&lt;br/&gt;
-     * &lt;br/&gt;
+     * the status code is not something like 2xx.&lt;br&gt;
+     * &lt;br&gt;
      * Be careful! If you request resources e.g. with {@link #ifModifiedSince(long)}, an exception will also be
      * thrown in the positive case of &lt;code&gt;304 Not Modified&lt;/code&gt;.
      *
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ensureSuccess() {
-<span class="fc" id="L251">        this.ensureSuccess = true;</span>
-<span class="fc" id="L252">        return this;</span>
+<span class="fc" id="L268">        this.ensureSuccess = true;</span>
+<span class="fc" id="L269">        return this;</span>
     }
 
     /**
      * Set the number of retries after the first request failed.
-     * &lt;br/&gt;
+     * &lt;br&gt;
      * When `waitExponential` is set, then there will be {@link Thread#sleep(long)} between
      * the retries. If the thread is interrupted, there will be an `InterruptedException`
      * in the thrown `WebbException`. You can check this with {@link WebbException#getCause()}.
@@ -262,25 +279,25 @@ public class Request {
      *
      * @param retryCount This parameter holds the number of retries that will be made AFTER the
      *                   initial send in the event of a error. If an error occurs on the last
-     *                   attempt an exception will be raised.&lt;br/&gt;
-     *                   Values &gt; 10 are ignored (we're not gatling)
+     *                   attempt an exception will be raised.&lt;br&gt;
+     *                   Values &amp;gt; 10 are ignored (we're not gatling)
      * @param waitExponential sleep during retry attempts (exponential backoff).
      *                        For retry-counts more than 3, &lt;tt&gt;true&lt;/tt&gt; is mandatory.
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request retry(int retryCount, boolean waitExponential) {
-<span class="pc bpc" id="L272" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
-<span class="nc" id="L273">            retryCount = 0;</span>
+<span class="pc bpc" id="L289" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
+<span class="nc" id="L290">            retryCount = 0;</span>
         }
-<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
-<span class="nc" id="L276">            retryCount = 10;</span>
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
+<span class="nc" id="L293">            retryCount = 10;</span>
         }
-<span class="pc bpc" id="L278" title="1 of 4 branches missed.">        if (retryCount &gt; 3 &amp;&amp; !waitExponential) {</span>
-<span class="fc" id="L279">            throw new IllegalArgumentException(&quot;retries &gt; 3 only valid with wait&quot;);</span>
+<span class="pc bpc" id="L295" title="1 of 4 branches missed.">        if (retryCount &gt; 3 &amp;&amp; !waitExponential) {</span>
+<span class="fc" id="L296">            throw new IllegalArgumentException(&quot;retries &gt; 3 only valid with wait&quot;);</span>
         }
-<span class="fc" id="L281">        this.retryCount = retryCount;</span>
-<span class="fc" id="L282">        this.waitExponential = waitExponential;</span>
-<span class="fc" id="L283">        return this;</span>
+<span class="fc" id="L298">        this.retryCount = retryCount;</span>
+<span class="fc" id="L299">        this.waitExponential = waitExponential;</span>
+<span class="fc" id="L300">        return this;</span>
     }
 
     /**
@@ -288,7 +305,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;String&lt;/code&gt;
      */
     public Response&lt;String&gt; asString() {
-<span class="fc" id="L291">        return webb.execute(this, String.class);</span>
+<span class="fc" id="L308">        return webb.execute(this, String.class);</span>
     }
 
     /**
@@ -296,7 +313,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONObject&lt;/code&gt;
      */
     public Response&lt;JSONObject&gt; asJsonObject() {
-<span class="fc" id="L299">        return webb.execute(this, JSONObject.class);</span>
+<span class="fc" id="L316">        return webb.execute(this, JSONObject.class);</span>
     }
 
     /**
@@ -304,7 +321,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONArray&lt;/code&gt;
      */
     public Response&lt;JSONArray&gt; asJsonArray() {
-<span class="fc" id="L307">        return webb.execute(this, JSONArray.class);</span>
+<span class="fc" id="L324">        return webb.execute(this, JSONArray.class);</span>
     }
 
     /**
@@ -312,7 +329,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;byte[]&lt;/code&gt;
      */
     public Response&lt;byte[]&gt; asBytes() {
-<span class="fc" id="L315">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
+<span class="fc" id="L332">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
     }
 
     /**
@@ -320,8 +337,8 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
      */
     public Response&lt;Void&gt; asVoid() {
-<span class="fc" id="L323">        return webb.execute(this, Void.class);</span>
+<span class="fc" id="L340">        return webb.execute(this, Void.class);</span>
     }
 
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.6.4.201312101107</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
