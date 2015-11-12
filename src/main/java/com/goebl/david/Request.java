@@ -66,6 +66,23 @@ public class Request {
     }
 
     /**
+     * Set (or overwrite) many parameters via a map.
+     * <br>
+     * @param valueByName a Map of name-value pairs,<br>
+     *  the name of the parameter (it's better to use only contain ASCII characters)<br>
+     *  the value of the parameter; <code>null</code> will be converted to empty string, for all other
+     *              objects to <code>toString()</code> method converts it to String
+     * @return <code>this</code> for method chaining (fluent API)
+     */
+    public Request params(Map<String, Object> valueByName) {
+        if (params == null) {
+            params = new LinkedHashMap<String, Object>();
+        }
+        params.putAll(valueByName);
+        return this;
+    }
+
+    /**
      * Get the URI of this request.
      *
      * @return URI

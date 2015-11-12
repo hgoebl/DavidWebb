@@ -4,6 +4,8 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class TestWebb extends AbstractTestWebb {
@@ -165,6 +167,20 @@ public class TestWebb extends AbstractTestWebb {
                 .param("number", 4711)
                 .param("null", null)
                 .param("empty", "")
+                .asString();
+
+        assertEquals(204, response.getStatusCode());
+    }
+
+    public void testParameterTypesWithMap() throws Exception {
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put("string", SIMPLE_ASCII);
+        params.put("number", 4711);
+        params.put("null", null);
+        params.put("empty", "");
+        Response<String> response = webb
+                .get("/parameter-types")
+                .params(params)
                 .asString();
 
         assertEquals(204, response.getStatusCode());

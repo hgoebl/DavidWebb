@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.3.0'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 'Google Inc.:Google APIs:23'
+    buildToolsVersion "23.0.1"
+
+    defaultConfig {
+        applicationId "com.goebl.david"
+        minSdkVersion 8
+        targetSdkVersion 8
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src', 'build/generated/source/apt/${variant.dirName}']
+            // resources.srcDirs = ['res']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+}
+
+dependencies {
+    compile files('libs/david-webb-tests.jar')
+    compile files('libs/david-webb.jar')
+}
