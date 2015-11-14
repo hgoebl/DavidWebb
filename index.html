@@ -2,9 +2,9 @@
 <html>
 
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="DavidWebb : Lightweight Java HTTP-Client for calling JSON REST-Services (especially for Android)" />
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="DavidWebb : Lightweight Java HTTP-Client for calling JSON REST-Services (especially for Android)">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
@@ -32,12 +32,12 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <h1>
-<a name="davidwebb" class="anchor" href="#davidwebb"><span class="octicon octicon-link"></span></a>DavidWebb</h1>
+<a id="davidwebb" class="anchor" href="#davidwebb" aria-hidden="true"><span class="octicon octicon-link"></span></a>DavidWebb</h1>
 
 <p>Lightweight Java HTTP-Client for calling JSON REST-Services (especially made for Android).</p>
 
 <h2>
-<a name="problem" class="anchor" href="#problem"><span class="octicon octicon-link"></span></a>Problem</h2>
+<a id="problem" class="anchor" href="#problem" aria-hidden="true"><span class="octicon octicon-link"></span></a>Problem</h2>
 
 <p>If you have to call a RESTful Webservice from Java, especially if you are on Android, you have some options:</p>
 
@@ -50,16 +50,18 @@ only on very old Android versions.</li>
 It is part of JDK, but it's cumbersome to use (if not to say a nightmare).</li>
 <li>Add <code>Unirest</code>, <code>Restlet</code> or some other "all-you-can-eat", universal, multi-part, File-upload and all-cases
 supporting library which adds some hundred KB of jars to your APK.</li>
-</ul><h2>
-<a name="solved" class="anchor" href="#solved"><span class="octicon octicon-link"></span></a>Solved</h2>
+</ul>
 
-<p><strong>DavidWebb</strong> is a small wrapper around
+<h2>
+<a id="solved" class="anchor" href="#solved" aria-hidden="true"><span class="octicon octicon-link"></span></a>Solved</h2>
+
+<p><strong>DavidWebb</strong> is a paper-thin wrapper around
 <a href="http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html">HttpURLConnection</a>.
 It supports most HTTP communication cases when you talk to REST services and your data is JSON. It is very
 lightweight (~18 KB jar) and super-easy to use.</p>
 
 <h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features</h2>
 
 <ul>
 <li>Supports GET, POST, PUT, DELETE</li>
@@ -74,8 +76,10 @@ lightweight (~18 KB jar) and super-easy to use.</p>
 <li>supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)</li>
 <li>pass-through to "real" connection for special cases</li>
 <li>option to retry the request in case of special errors (503, 504, 'connection reset by peer')</li>
-</ul><h2>
-<a name="non-features" class="anchor" href="#non-features"><span class="octicon octicon-link"></span></a>Non-Features</h2>
+</ul>
+
+<h2>
+<a id="non-features" class="anchor" href="#non-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Non-Features</h2>
 
 <p>Following features are not supported and there are no plans to realize them:</p>
 
@@ -87,67 +91,67 @@ As DavidWebb is just a thin wrapper over HttpURLConnection, you can use <code>Co
 <li>Mixing URL-parameters and x-www-form-urlencoded POST bodies.<br>
 Workaround: build the URI with the help of <code>WebbUtils.queryString</code> and use <code>Request.param()</code> for
 the form-fields.</li>
-</ul><p>Where not stated, the workaround is to use another library or implement it above of DavidWebb.
+</ul>
+
+<p>Where not stated, the workaround is to use another library or implement it above of DavidWebb.
 If you think your implementation might be useful for others and it's not blowing up the size of
 the JAR, please create a pull request. (Adding heavy dependencies is not an option.)</p>
 
 <h1>
-<a name="usage-examples" class="anchor" href="#usage-examples"><span class="octicon octicon-link"></span></a>Usage Examples</h1>
+<a id="usage-examples" class="anchor" href="#usage-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage Examples</h1>
 
 <p>Below you can see some examples of how to use DavidWebb. And here you can find the
 <a href="http://hgoebl.github.io/DavidWebb/apidocs/">API Documentation</a>.</p>
 
 <p><strong>This is some code from a SyncAdapter of an Android App:</strong></p>
 
-<div class="highlight highlight-java"><pre><span class="c1">// create the client (one-time, can be used from different threads)</span>
-<span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
-<span class="n">webb</span><span class="o">.</span><span class="na">setBaseUri</span><span class="o">(</span><span class="n">SyncPreferences</span><span class="o">.</span><span class="na">REST_ENDPOINT</span><span class="o">);</span>
-<span class="n">webb</span><span class="o">.</span><span class="na">setDefaultHeader</span><span class="o">(</span><span class="n">Webb</span><span class="o">.</span><span class="na">HDR_USER_AGENT</span><span class="o">,</span> <span class="n">Const</span><span class="o">.</span><span class="na">UA</span><span class="o">);</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-c">// create the client (one-time, can be used from different threads)</span>
+<span class="pl-smi">Webb</span> webb <span class="pl-k">=</span> <span class="pl-smi">Webb</span><span class="pl-k">.</span>create();
+webb<span class="pl-k">.</span>setBaseUri(<span class="pl-smi">SyncPreferences</span><span class="pl-c1"><span class="pl-k">.</span>REST_ENDPOINT</span>);
+webb<span class="pl-k">.</span>setDefaultHeader(<span class="pl-smi">Webb</span><span class="pl-c1"><span class="pl-k">.</span>HDR_USER_AGENT</span>, <span class="pl-smi">Const</span><span class="pl-c1"><span class="pl-k">.</span>UA</span>);
 
-<span class="c1">// later we authenticate</span>
-<span class="n">Response</span><span class="o">&lt;</span><span class="n">JSONObject</span><span class="o">&gt;</span> <span class="n">response</span> <span class="o">=</span> <span class="n">webb</span>
-        <span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="s">"/session"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"authentication"</span><span class="o">,</span> <span class="n">createAuthentication</span><span class="o">(</span><span class="n">syncPreferences</span><span class="o">))</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"deviceId"</span><span class="o">,</span> <span class="n">syncPrefs</span><span class="o">.</span><span class="na">getDeviceId</span><span class="o">())</span>
-        <span class="o">.</span><span class="na">ensureSuccess</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">asJsonObject</span><span class="o">();</span>
+<span class="pl-c">// later we authenticate</span>
+<span class="pl-k">Response&lt;<span class="pl-smi">JSONObject</span>&gt;</span> response <span class="pl-k">=</span> webb
+        .post(<span class="pl-s"><span class="pl-pds">"</span>/session<span class="pl-pds">"</span></span>)
+        .param(<span class="pl-s"><span class="pl-pds">"</span>authentication<span class="pl-pds">"</span></span>, createAuthentication(syncPreferences))
+        .param(<span class="pl-s"><span class="pl-pds">"</span>deviceId<span class="pl-pds">"</span></span>, syncPreferences<span class="pl-k">.</span>getDeviceId())
+        .ensureSuccess()
+        .asJsonObject();
 
-<span class="n">JSONObject</span> <span class="n">apiResult</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+<span class="pl-smi">JSONObject</span> apiResult <span class="pl-k">=</span> response<span class="pl-k">.</span>getBody();
 
-<span class="n">AccessToken</span> <span class="n">accessToken</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AccessToken</span><span class="o">();</span>
-<span class="n">accessToken</span><span class="o">.</span><span class="na">token</span> <span class="o">=</span> <span class="n">apiResult</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"token"</span><span class="o">);</span>
-<span class="n">accessToken</span><span class="o">.</span><span class="na">validUntil</span> <span class="o">=</span> <span class="n">apiResult</span><span class="o">.</span><span class="na">getLong</span><span class="o">(</span><span class="s">"validUntil"</span><span class="o">);</span>
+<span class="pl-smi">AccessToken</span> accessToken <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">AccessToken</span>();
+accessToken<span class="pl-k">.</span>token <span class="pl-k">=</span> apiResult<span class="pl-k">.</span>getString(<span class="pl-s"><span class="pl-pds">"</span>token<span class="pl-pds">"</span></span>);
+accessToken<span class="pl-k">.</span>validUntil <span class="pl-k">=</span> apiResult<span class="pl-k">.</span>getLong(<span class="pl-s"><span class="pl-pds">"</span>validUntil<span class="pl-pds">"</span></span>);
 
-<span class="n">webb</span><span class="o">.</span><span class="na">setDefaultHeader</span><span class="o">(</span><span class="n">HDR_ACCESS_TOKEN</span><span class="o">,</span> <span class="n">accessToken</span><span class="o">.</span><span class="na">token</span><span class="o">);</span>
+webb<span class="pl-k">.</span>setDefaultHeader(<span class="pl-c1">HDR_ACCESS_TOKEN</span>, accessToken<span class="pl-k">.</span>token);
 
-<span class="n">JSONObject</span> <span class="n">sync</span> <span class="o">=</span> <span class="n">webb</span><span class="o">.</span><span class="na">post</span><span class="o">(</span><span class="s">"/startSync"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"lastSync"</span><span class="o">,</span> <span class="n">syncPrefs</span><span class="o">.</span><span class="na">getLastSync</span><span class="o">())</span>
-        <span class="o">.</span><span class="na">ensureSuccess</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">asJsonObject</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+<span class="pl-smi">JSONObject</span> sync <span class="pl-k">=</span> webb<span class="pl-k">.</span>post(<span class="pl-s"><span class="pl-pds">"</span>/startSync<span class="pl-pds">"</span></span>)
+        .param(<span class="pl-s"><span class="pl-pds">"</span>lastSync<span class="pl-pds">"</span></span>, syncPreferences<span class="pl-k">.</span>getLastSync())
+        .ensureSuccess()
+        .asJsonObject()
+        .getBody();
 
-<span class="c1">// ... etc. etc.</span>
+<span class="pl-c">// ... etc. etc.</span>
 
-<span class="c1">// releaseAccessToken</span>
-<span class="n">webb</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="s">"/session"</span><span class="o">).</span><span class="na">asVoid</span><span class="o">();</span>
-<span class="n">accessToken</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</pre></div>
+<span class="pl-c">// releaseAccessToken</span>
+webb<span class="pl-k">.</span>delete(<span class="pl-s"><span class="pl-pds">"</span>/session<span class="pl-pds">"</span></span>)<span class="pl-k">.</span>asVoid();
+accessToken <span class="pl-k">=</span> <span class="pl-c1">null</span>;</pre></div>
 
 <p><strong>Using Google Directions API:</strong></p>
 
-<div class="highlight highlight-java"><pre><span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
-<span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">webb</span>
-        <span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"http://maps.googleapis.com/maps/api/directions/json"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"origin"</span><span class="o">,</span> <span class="k">new</span> <span class="n">GeoPoint</span><span class="o">(</span><span class="mf">47.8227</span><span class="o">,</span> <span class="mf">12.096933</span><span class="o">))</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"destination"</span><span class="o">,</span> <span class="k">new</span> <span class="n">GeoPoint</span><span class="o">(</span><span class="mf">47.8633</span><span class="o">,</span> <span class="mf">12.215533</span><span class="o">))</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"mode"</span><span class="o">,</span> <span class="s">"walking"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">param</span><span class="o">(</span><span class="s">"sensor"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">ensureSuccess</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">asJsonObject</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">Webb</span> webb <span class="pl-k">=</span> <span class="pl-smi">Webb</span><span class="pl-k">.</span>create();
+<span class="pl-smi">JSONObject</span> result <span class="pl-k">=</span> webb
+        .get(<span class="pl-s"><span class="pl-pds">"</span>http://maps.googleapis.com/maps/api/directions/json<span class="pl-pds">"</span></span>)
+        .param(<span class="pl-s"><span class="pl-pds">"</span>origin<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">GeoPoint</span>(<span class="pl-c1">47.8227</span>, <span class="pl-c1">12.096933</span>))
+        .param(<span class="pl-s"><span class="pl-pds">"</span>destination<span class="pl-pds">"</span></span>, <span class="pl-k">new</span> <span class="pl-smi">GeoPoint</span>(<span class="pl-c1">47.8633</span>, <span class="pl-c1">12.215533</span>))
+        .param(<span class="pl-s"><span class="pl-pds">"</span>mode<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>walking<span class="pl-pds">"</span></span>)
+        .param(<span class="pl-s"><span class="pl-pds">"</span>sensor<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>true<span class="pl-pds">"</span></span>)
+        .ensureSuccess()
+        .asJsonObject()
+        .getBody();
 
-<span class="n">JSONArray</span> <span class="n">routes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">getJSONArray</span><span class="o">(</span><span class="s">"routes"</span><span class="o">);</span>
-</pre></div>
+<span class="pl-smi">JSONArray</span> routes <span class="pl-k">=</span> result<span class="pl-k">.</span>getJSONArray(<span class="pl-s"><span class="pl-pds">"</span>routes<span class="pl-pds">"</span></span>);</pre></div>
 
 <p><strong>Deal with "connection reset by peer" or other recoverable errors</strong></p>
 
@@ -156,19 +160,15 @@ This sometimes causes errors, because the server might already have closed the c
 the mobile device knowing it. It would be cumbersome to cope with this and other situation where
 a retry solved all problems. Since version 1.2.0 it is more comfortable for you:</p>
 
-<div class="highlight highlight-java"><pre><span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
-<span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">webb</span>
-        <span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"https://example.com/api/request"</span><span class="o">)</span>
-        <span class="o">.</span><span class="na">retry</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="kc">false</span><span class="o">)</span> <span class="c1">// at most one retry, don't do exponential backoff</span>
-        <span class="o">.</span><span class="na">asJsonObject</span><span class="o">()</span>
-        <span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
-</pre></div>
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">Webb</span> webb <span class="pl-k">=</span> <span class="pl-smi">Webb</span><span class="pl-k">.</span>create();
+<span class="pl-smi">JSONObject</span> result <span class="pl-k">=</span> webb
+        .get(<span class="pl-s"><span class="pl-pds">"</span>https://example.com/api/request<span class="pl-pds">"</span></span>)
+        .retry(<span class="pl-c1">1</span>, <span class="pl-c1">false</span>) <span class="pl-c">// at most one retry, don't do exponential backoff</span>
+        .asJsonObject()
+        .getBody();</pre></div>
 
 <p>In many cases you will need to change the behaviour of how and when to retry a request.
 For this, you can register your own <code>RetryManager</code>, see <code>webb.setRetryManager()</code>.</p>
-
-<p><strong>Hint:</strong> Currently <code>1.2.0</code> is not yet released. Build from sources or download <code>1.2.0-SNAPSHOT</code>
-from staging-server (see Maven Coordinates).</p>
 
 <p><strong>You have to do Basic Authentication?</strong></p>
 
@@ -177,28 +177,26 @@ Base64 encoder. Because DavidWebb wants to be light and Android already provides
 it's left to you to insert a few lines of code. As you can see, it's not hard work.
 Use one of the methods to set a header and set Authorization header by yourself:</p>
 
-<div class="highlight highlight-java"><pre><span class="kt">byte</span><span class="o">[]</span> <span class="n">credentials</span> <span class="o">=</span> <span class="o">(</span><span class="n">username</span> <span class="o">+</span> <span class="s">":"</span> <span class="o">+</span> <span class="n">password</span><span class="o">).</span><span class="na">getBytes</span><span class="o">(</span><span class="s">"UTF-8"</span><span class="o">);</span>
-<span class="n">String</span> <span class="n">auth</span> <span class="o">=</span> <span class="s">"Basic "</span> <span class="o">+</span> <span class="n">Base64</span><span class="o">.</span><span class="na">encodeToString</span><span class="o">(</span><span class="n">credentials</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
-<span class="n">Webb</span> <span class="n">webb</span> <span class="o">=</span> <span class="n">Webb</span><span class="o">.</span><span class="na">create</span><span class="o">();</span>
-<span class="n">webb</span><span class="o">.</span><span class="na">setDefaultHeader</span><span class="o">(</span><span class="n">Webb</span><span class="o">.</span><span class="na">HDR_AUTHORIZATION</span><span class="o">,</span> <span class="n">auth</span><span class="o">);</span>
-</pre></div>
+<div class="highlight highlight-source-java"><pre><span class="pl-k">byte</span>[] credentials <span class="pl-k">=</span> (username <span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span>:<span class="pl-pds">"</span></span> <span class="pl-k">+</span> password)<span class="pl-k">.</span>getBytes(<span class="pl-s"><span class="pl-pds">"</span>UTF-8<span class="pl-pds">"</span></span>);
+<span class="pl-smi">String</span> auth <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Basic <span class="pl-pds">"</span></span> <span class="pl-k">+</span> <span class="pl-smi">Base64</span><span class="pl-k">.</span>encodeToString(credentials, <span class="pl-c1">0</span>);
+<span class="pl-smi">Webb</span> webb <span class="pl-k">=</span> <span class="pl-smi">Webb</span><span class="pl-k">.</span>create();
+webb<span class="pl-k">.</span>setDefaultHeader(<span class="pl-smi">Webb</span><span class="pl-c1"><span class="pl-k">.</span>HDR_AUTHORIZATION</span>, auth);</pre></div>
 
 <p><strong>More Samples</strong></p>
 
 <p>If you want to see more examples, just have a look at the JUnit TestCase (src/test/java/...).</p>
 
 <h2>
-<a name="special-case-android--froyo" class="anchor" href="#special-case-android--froyo"><span class="octicon octicon-link"></span></a>Special Case Android &lt; Froyo</h2>
+<a id="special-case-android--froyo" class="anchor" href="#special-case-android--froyo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Special Case Android &lt; Froyo</h2>
 
 <p>You should add this if you build for legacy Android devices:</p>
 
-<div class="highlight highlight-java"><pre><span class="k">if</span> <span class="o">(</span><span class="n">Build</span><span class="o">.</span><span class="na">VERSION</span><span class="o">.</span><span class="na">SDK_INT</span> <span class="o">&lt;</span> <span class="n">Build</span><span class="o">.</span><span class="na">VERSION_CODES</span><span class="o">.</span><span class="na">FROYO</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">"http.keepAlive"</span><span class="o">,</span> <span class="s">"false"</span><span class="o">);</span>
-<span class="o">}</span>
-</pre></div>
+<div class="highlight highlight-source-java"><pre><span class="pl-k">if</span> (<span class="pl-smi">Build</span><span class="pl-c1"><span class="pl-k">.</span>VERSION<span class="pl-k">.</span>SDK_INT</span> <span class="pl-k">&lt;</span> <span class="pl-smi">Build</span><span class="pl-c1"><span class="pl-k">.</span>VERSION_CODES<span class="pl-k">.</span>FROYO</span>) {
+    <span class="pl-smi">System</span><span class="pl-k">.</span>setProperty(<span class="pl-s"><span class="pl-pds">"</span>http.keepAlive<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>false<span class="pl-pds">"</span></span>);
+}</pre></div>
 
 <h2>
-<a name="in-case-of-problems" class="anchor" href="#in-case-of-problems"><span class="octicon octicon-link"></span></a>In Case Of Problems</h2>
+<a id="in-case-of-problems" class="anchor" href="#in-case-of-problems" aria-hidden="true"><span class="octicon octicon-link"></span></a>In Case Of Problems</h2>
 
 <p>I've encountered some problems which could be solved by disabling <strong>keep-alive</strong> of HTTP connections.
 The solution above did not always work on recent versions of Android. To be sure to do without
@@ -212,18 +210,17 @@ Request&lt;String&gt; request = webb.post("/some-resource").header("Connection",
 </code></pre>
 
 <h1>
-<a name="maven-coordinates" class="anchor" href="#maven-coordinates"><span class="octicon octicon-link"></span></a>Maven Coordinates</h1>
+<a id="maven-coordinates" class="anchor" href="#maven-coordinates" aria-hidden="true"><span class="octicon octicon-link"></span></a>Maven Coordinates</h1>
 
-<div class="highlight highlight-xml"><pre><span class="nt">&lt;dependency&gt;</span>
-    <span class="nt">&lt;groupId&gt;</span>com.goebl<span class="nt">&lt;/groupId&gt;</span>
-    <span class="nt">&lt;artifactId&gt;</span>david-webb<span class="nt">&lt;/artifactId&gt;</span>
-    <span class="nt">&lt;version&gt;</span>1.1.0<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
-</pre></div>
+<div class="highlight highlight-text-xml"><pre>&lt;<span class="pl-ent">dependency</span>&gt;
+    &lt;<span class="pl-ent">groupId</span>&gt;com.goebl&lt;/<span class="pl-ent">groupId</span>&gt;
+    &lt;<span class="pl-ent">artifactId</span>&gt;david-webb&lt;/<span class="pl-ent">artifactId</span>&gt;
+    &lt;<span class="pl-ent">version</span>&gt;1.2.0&lt;/<span class="pl-ent">version</span>&gt;
+&lt;/<span class="pl-ent">dependency</span>&gt;</pre></div>
 
 <p>Gradle</p>
 
-<pre><code>'com.goebl:david-webb:1.1.0'
+<pre><code>'com.goebl:david-webb:1.2.0'
 </code></pre>
 
 <p>Not using Maven/Gradle? - Then you can download the plain JAR from following links directly:</p>
@@ -231,15 +228,22 @@ Request&lt;String&gt; request = webb.post("/some-resource").header("Connection",
 <ul>
 <li><a href="https://oss.sonatype.org/content/groups/staging/com/goebl/david-webb/">SNAPSHOT Versions</a></li>
 <li><a href="http://repo.maven.apache.org/maven2/com/goebl/david-webb/">RELEASE Versions</a></li>
-</ul><h1>
-<a name="background" class="anchor" href="#background"><span class="octicon octicon-link"></span></a>Background</h1>
+</ul>
+
+<h1>
+<a id="background" class="anchor" href="#background" aria-hidden="true"><span class="octicon octicon-link"></span></a>Background</h1>
 
 <h2>
-<a name="not-for-you" class="anchor" href="#not-for-you"><span class="octicon octicon-link"></span></a>Not for you?</h2>
+<a id="not-for-you" class="anchor" href="#not-for-you" aria-hidden="true"><span class="octicon octicon-link"></span></a>Not for you?</h2>
 
 <p>If <strong>DavidWebb</strong> is too lightweight and you're missing features, you can have a look at:</p>
 
 <ul>
+<li>
+<a href="http://square.github.io/okhttp/">OkHttp</a> An HTTP &amp; SPDY client for Android and Java applications</li>
+<li>
+<a href="https://developer.android.com/training/volley/index.html">Volley</a> is an HTTP library that makes networking for
+Android apps easier and most importantly, faster.</li>
 <li>
 <a href="https://code.google.com/p/basic-http-client/">basic-http-client</a>
 Basic HTTP client w/ Android AsyncTask wrapper</li>
@@ -259,15 +263,15 @@ Lightweight HTTP Request Library</li>
 <a href="http://restlet.org/">Restlet Framework</a>
 The leading web API framework for Java</li>
 <li>
-<a href="https://android.googlesource.com/platform/frameworks/volley">Volley</a> and
-<a href="http://www.technotalkative.com/android-volley-library-example/">Volley Example</a>
-IMHO: Probably quite good, but where's the documentation?</li>
-<li>
 <a href="http://datadroid.foxykeep.com/">DataDroid</a> - an Android library for Data Management</li>
+<li>
+<a href="https://github.com/google/google-http-java-client">google-http-java-client</a> Google HTTP Client Library for Java</li>
 <li><a href="https://github.com/octo-online/robospice#alternatives-to-robospice-">More Alternatives (on RoboSpice)</a></li>
 <li>(tell me if I missed your award-winning REST-client library!)</li>
-</ul><h2>
-<a name="the-name" class="anchor" href="#the-name"><span class="octicon octicon-link"></span></a>The Name!?</h2>
+</ul>
+
+<h2>
+<a id="the-name" class="anchor" href="#the-name" aria-hidden="true"><span class="octicon octicon-link"></span></a>The Name!?</h2>
 
 <p>David <strong>Webb</strong> is the real name of <strong>Jason</strong> Bourne. So <strong>JSON</strong> and <strong>Web</strong>, did you get it?
 OK, might be silly, but Bourne 1-3 are my favorite films and so at least I can remember the name.</p>
@@ -280,12 +284,12 @@ of a series of novels by Robert Ludlum and subsequent film adaptations</p>
 </blockquote>
 
 <h1>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h1>
 
 <p>MIT License, see LICENSE file</p>
 
 <h1>
-<a name="testing" class="anchor" href="#testing"><span class="octicon octicon-link"></span></a>Testing</h1>
+<a id="testing" class="anchor" href="#testing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Testing</h1>
 
 <p>The Unit-Tests do not mock any network-libraries, but depend on a small Express-application running.</p>
 
@@ -298,23 +302,16 @@ node .
 </code></pre>
 
 <h2>
-<a name="android-tests" class="anchor" href="#android-tests"><span class="octicon octicon-link"></span></a>Android Tests</h2>
+<a id="android-tests" class="anchor" href="#android-tests" aria-hidden="true"><span class="octicon octicon-link"></span></a>Android Tests</h2>
 
 <p>Before running the Android tests, build with maven, deploy the Android app and be sure to
 set the timezone of your emulator to the same as your PC and synchronize date/time,
 otherwise some tests will fail:</p>
 
-<div class="highlight highlight-sh"><pre><span class="c"># synchronize time of emulator (otherwise problems with SSL are likely)</span>
-adb -e shell date -s <span class="sb">`</span>date +<span class="s2">"%Y%m%d.%H%M%S"</span><span class="sb">`</span>
-
-<span class="c"># run the tests</span>
-adb shell am instrument -w <span class="se">\</span>
-  -e class com.goebl.david.tests.DavidWebbAndroidTests <span class="se">\</span>
-  com.goebl.david/android.test.InstrumentationTestRunner
-</pre></div>
+<p>There is a script (<code>src/test/android/run-tests-emulator.sh</code>) which also builds the test-app with gradle.</p>
 
 <h2>
-<a name="coverage" class="anchor" href="#coverage"><span class="octicon octicon-link"></span></a>Coverage</h2>
+<a id="coverage" class="anchor" href="#coverage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Coverage</h2>
 
 <p>The test coverage is measured only with the JUnit-tests for JavaSE. As mocking is not easy
 to accomplish under Android/Dalvik, coverage is not measured for this runtime environment.</p>
@@ -325,33 +322,43 @@ to accomplish under Android/Dalvik, coverage is not measured for this runtime en
 <li>Branches: 79%</li>
 <li>see <a href="http://hgoebl.github.io/DavidWebb/jacoco/">JaCoCo Coverage Report</a>
 </li>
-</ul><h1>
-<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h1>
+</ul>
+
+<h1>
+<a id="todo" class="anchor" href="#todo" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO</h1>
 
 <h2>
-<a name="features-planned" class="anchor" href="#features-planned"><span class="octicon octicon-link"></span></a>Features (planned)</h2>
+<a id="features-planned" class="anchor" href="#features-planned" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features (planned)</h2>
 
 <ul>
 <li>support char-sets other than UTF-8</li>
 <li>unprefixJson <a href="http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx">http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx</a>
 </li>
-</ul><h2>
-<a name="features-only-ideas" class="anchor" href="#features-only-ideas"><span class="octicon octicon-link"></span></a>Features (only ideas)</h2>
+<li>progress callback during POST requests where size is known in advance</li>
+<li>Support for PATCH requests (only when OkHttp is used as a replacement for HttpURLConnection)</li>
+</ul>
+
+<h2>
+<a id="features-only-ideas" class="anchor" href="#features-only-ideas" aria-hidden="true"><span class="octicon octicon-link"></span></a>Features (only ideas)</h2>
 
 <ul>
 <li>provide base classes (or only examples) for using DavidWebb together with <code>AsyncTask</code>
 </li>
 <li>decorator/interceptor beforeSend - provide hooks to manipulate request before send</li>
 <li>decorator/interceptor afterReceive - provide hooks to manipulate raw response after receiving it</li>
-</ul><p>Create an issue if you want to have one of those ideas implemented.</p>
+</ul>
+
+<p>Create an issue if you want to have one of those ideas implemented.</p>
 
 <h2>
-<a name="documentation" class="anchor" href="#documentation"><span class="octicon octicon-link"></span></a>Documentation</h2>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h2>
 
 <ul>
 <li>Create User-Guide</li>
-</ul><h2>
-<a name="testing-1" class="anchor" href="#testing-1"><span class="octicon octicon-link"></span></a>Testing</h2>
+</ul>
+
+<h2>
+<a id="testing-1" class="anchor" href="#testing-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Testing</h2>
 
 <ul>
 <li>Higher coverage</li>
@@ -364,7 +371,7 @@ to accomplish under Android/Dalvik, coverage is not measured for this runtime en
     <div id="footer_wrap" class="outer">
       <footer class="inner">
         <p class="copyright">DavidWebb maintained by <a href="https://github.com/hgoebl">hgoebl</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
 
