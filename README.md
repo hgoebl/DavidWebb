@@ -131,9 +131,6 @@ JSONObject result = webb
 In many cases you will need to change the behaviour of how and when to retry a request.
 For this, you can register your own `RetryManager`, see `webb.setRetryManager()`.
 
-**Hint:** Currently `1.2.0` is not yet released. Build from sources or download `1.2.0-SNAPSHOT`
-from staging-server (see Maven Coordinates).
-
 **You have to do Basic Authentication?**
 
 This authorization method uses a Base64 encoded string. Unfortunately Java SE doesn't provide a
@@ -181,13 +178,13 @@ Request<String> request = webb.post("/some-resource").header("Connection", "clos
 <dependency>
     <groupId>com.goebl</groupId>
     <artifactId>david-webb</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
 Gradle
 
-    'com.goebl:david-webb:1.1.0'
+    'com.goebl:david-webb:1.2.0'
 
 Not using Maven/Gradle? - Then you can download the plain JAR from following links directly:
 
@@ -201,6 +198,8 @@ Not using Maven/Gradle? - Then you can download the plain JAR from following lin
 If **DavidWebb** is too lightweight and you're missing features, you can have a look at:
 
   * [OkHttp](http://square.github.io/okhttp/) An HTTP & SPDY client for Android and Java applications
+  * [Volley](https://developer.android.com/training/volley/index.html) is an HTTP library that makes networking for
+    Android apps easier and most importantly, faster.
   * [basic-http-client](https://code.google.com/p/basic-http-client/)
     Basic HTTP client w/ Android AsyncTask wrapper
   * [RESTDroid](https://github.com/PCreations/RESTDroid)
@@ -213,8 +212,6 @@ If **DavidWebb** is too lightweight and you're missing features, you can have a 
     Lightweight HTTP Request Library
   * [Restlet Framework](http://restlet.org/)
     The leading web API framework for Java
-  * [Volley](https://developer.android.com/training/volley/index.html) is an HTTP library that makes networking for
-    Android apps easier and most importantly, faster.
   * [DataDroid](http://datadroid.foxykeep.com/) - an Android library for Data Management
   * [google-http-java-client](https://github.com/google/google-http-java-client) Google HTTP Client Library for Java
   * [More Alternatives (on RoboSpice)](https://github.com/octo-online/robospice#alternatives-to-robospice-)
@@ -253,15 +250,7 @@ Before running the Android tests, build with maven, deploy the Android app and b
 set the timezone of your emulator to the same as your PC and synchronize date/time,
 otherwise some tests will fail:
 
-```sh
-# synchronize time of emulator (otherwise problems with SSL are likely)
-adb -e shell date -s `date +"%Y%m%d.%H%M%S"`
-
-# run the tests
-adb shell am instrument -w \
-  -e class com.goebl.david.tests.DavidWebbAndroidTests \
-  com.goebl.david/android.test.InstrumentationTestRunner
-```
+There is a script (`src/test/android/run-tests-emulator.sh`) which also builds the test-app with gradle.
 
 ## Coverage
 
@@ -278,6 +267,8 @@ to accomplish under Android/Dalvik, coverage is not measured for this runtime en
 ## Features (planned)
   * support char-sets other than UTF-8
   * unprefixJson <http://haacked.com/archive/2008/11/20/anatomy-of-a-subtle-json-vulnerability.aspx>
+  * progress callback during POST requests where size is known in advance
+  * Support for PATCH requests (only when OkHttp is used as a replacement for HttpURLConnection)
 
 ## Features (only ideas)
   * provide base classes (or only examples) for using DavidWebb together with `AsyncTask`
