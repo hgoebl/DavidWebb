@@ -14,7 +14,10 @@ import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -31,7 +34,7 @@ import java.util.zip.InflaterInputStream;
  */
 public class WebbUtils {
 
-<span class="nc" id="L34">    protected WebbUtils() {}</span>
+<span class="nc" id="L37">    protected WebbUtils() {}</span>
 
     /**
      * Convert a Map to a query string.
@@ -41,20 +44,37 @@ public class WebbUtils {
      * @return e.g. &quot;key1=value&amp;amp;key2=&amp;amp;email=max%40example.com&quot;
      */
     public static String queryString(Map&lt;String, Object&gt; values) {
-<span class="fc" id="L44">        StringBuilder sbuf = new StringBuilder();</span>
-<span class="fc" id="L45">        String separator = &quot;&quot;;</span>
+<span class="fc" id="L47">        StringBuilder sbuf = new StringBuilder();</span>
+<span class="fc" id="L48">        String separator = &quot;&quot;;</span>
 
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (Map.Entry&lt;String, Object&gt; entry : values.entrySet()) {</span>
-<span class="fc bfc" id="L48" title="All 2 branches covered.">            String value = entry.getValue() == null ? &quot;&quot; : String.valueOf(entry.getValue());</span>
-<span class="fc" id="L49">            sbuf.append(separator);</span>
-<span class="fc" id="L50">            sbuf.append(urlEncode(entry.getKey()));</span>
-<span class="fc" id="L51">            sbuf.append('=');</span>
-<span class="fc" id="L52">            sbuf.append(urlEncode(value));</span>
-<span class="fc" id="L53">            separator = &quot;&amp;&quot;;</span>
-<span class="fc" id="L54">        }</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        for (Map.Entry&lt;String, Object&gt; entry : values.entrySet()) {</span>
+<span class="fc" id="L51">            Object entryValue = entry.getValue();</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (entryValue instanceof Object[]) {</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                for (Object value : (Object[]) entryValue) {</span>
+<span class="fc" id="L54">                    appendParam(sbuf, separator, entry.getKey(), value);</span>
+<span class="fc" id="L55">                    separator = &quot;&amp;&quot;;</span>
+                }
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            } else if (entryValue instanceof Iterable) {</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">                for (Object multiValue : (Iterable) entryValue) {</span>
+<span class="fc" id="L59">                    appendParam(sbuf, separator, entry.getKey(), multiValue);</span>
+<span class="fc" id="L60">                    separator = &quot;&amp;&quot;;</span>
+<span class="fc" id="L61">                }</span>
+            } else {
+<span class="fc" id="L63">                appendParam(sbuf, separator, entry.getKey(), entryValue);</span>
+<span class="fc" id="L64">                separator = &quot;&amp;&quot;;</span>
+            }
+<span class="fc" id="L66">        }</span>
 
-<span class="fc" id="L56">        return sbuf.toString();</span>
+<span class="fc" id="L68">        return sbuf.toString();</span>
     }
+
+    private static void appendParam(StringBuilder sbuf, String separator, String entryKey, Object value) {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        String sValue = value == null ? &quot;&quot; : String.valueOf(value);</span>
+<span class="fc" id="L73">        sbuf.append(separator);</span>
+<span class="fc" id="L74">        sbuf.append(urlEncode(entryKey));</span>
+<span class="fc" id="L75">        sbuf.append('=');</span>
+<span class="fc" id="L76">        sbuf.append(urlEncode(sValue));</span>
+<span class="fc" id="L77">    }</span>
 
     /**
      * Convert a byte array to a JSONObject.
@@ -65,15 +85,15 @@ public class WebbUtils {
     public static JSONObject toJsonObject(byte[] bytes) {
         String json;
         try {
-<span class="fc" id="L68">            json = new String(bytes, Const.UTF8);</span>
-<span class="nc" id="L69">        } catch (UnsupportedEncodingException e) {</span>
-<span class="nc" id="L70">            throw new WebbException(e);</span>
-<span class="fc" id="L71">        }</span>
+<span class="fc" id="L88">            json = new String(bytes, Const.UTF8);</span>
+<span class="nc" id="L89">        } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L90">            throw new WebbException(e);</span>
+<span class="fc" id="L91">        }</span>
 
         try {
-<span class="fc" id="L74">            return new JSONObject(json);</span>
-<span class="fc" id="L75">        } catch (JSONException e) {</span>
-<span class="fc" id="L76">            throw new WebbException(&quot;payload is not a valid JSON object&quot;, e);</span>
+<span class="fc" id="L94">            return new JSONObject(json);</span>
+<span class="fc" id="L95">        } catch (JSONException e) {</span>
+<span class="fc" id="L96">            throw new WebbException(&quot;payload is not a valid JSON object&quot;, e);</span>
         }
     }
 
@@ -86,15 +106,15 @@ public class WebbUtils {
     public static JSONArray toJsonArray(byte[] bytes) {
         String json;
         try {
-<span class="fc" id="L89">            json = new String(bytes, Const.UTF8);</span>
-<span class="nc" id="L90">        } catch (UnsupportedEncodingException e) {</span>
-<span class="nc" id="L91">            throw new WebbException(e);</span>
-<span class="fc" id="L92">        }</span>
+<span class="fc" id="L109">            json = new String(bytes, Const.UTF8);</span>
+<span class="nc" id="L110">        } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L111">            throw new WebbException(e);</span>
+<span class="fc" id="L112">        }</span>
 
         try {
-<span class="fc" id="L95">            return new JSONArray(json);</span>
-<span class="fc" id="L96">        } catch (JSONException e) {</span>
-<span class="fc" id="L97">            throw new WebbException(&quot;payload is not a valid JSON array&quot;, e);</span>
+<span class="fc" id="L115">            return new JSONArray(json);</span>
+<span class="fc" id="L116">        } catch (JSONException e) {</span>
+<span class="fc" id="L117">            throw new WebbException(&quot;payload is not a valid JSON array&quot;, e);</span>
         }
     }
 
@@ -108,15 +128,15 @@ public class WebbUtils {
      * @throws IOException when read or write operation fails
      */
     public static byte[] readBytes(InputStream is) throws IOException {
-<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (is == null) {</span>
-<span class="fc" id="L112">            return null;</span>
+<span class="fc bfc" id="L131" title="All 2 branches covered.">        if (is == null) {</span>
+<span class="fc" id="L132">            return null;</span>
         }
         byte[] responseBody;
-<span class="fc" id="L115">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
-<span class="fc" id="L116">        copyStream(is, baos);</span>
-<span class="fc" id="L117">        baos.close();</span>
-<span class="fc" id="L118">        responseBody = baos.toByteArray();</span>
-<span class="fc" id="L119">        return responseBody;</span>
+<span class="fc" id="L135">        ByteArrayOutputStream baos = new ByteArrayOutputStream();</span>
+<span class="fc" id="L136">        copyStream(is, baos);</span>
+<span class="fc" id="L137">        baos.close();</span>
+<span class="fc" id="L138">        responseBody = baos.toByteArray();</span>
+<span class="fc" id="L139">        return responseBody;</span>
     }
 
     /**
@@ -129,12 +149,12 @@ public class WebbUtils {
      * @throws IOException when read or write operation fails
      */
     public static void copyStream(InputStream input, OutputStream output) throws IOException {
-<span class="fc" id="L132">        byte[] buffer = new byte[1024];</span>
+<span class="fc" id="L152">        byte[] buffer = new byte[1024];</span>
         int count;
-<span class="fc bfc" id="L134" title="All 2 branches covered.">        while ((count = input.read(buffer)) != -1) {</span>
-<span class="fc" id="L135">            output.write(buffer, 0, count);</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        while ((count = input.read(buffer)) != -1) {</span>
+<span class="fc" id="L155">            output.write(buffer, 0, count);</span>
         }
-<span class="fc" id="L137">    }</span>
+<span class="fc" id="L157">    }</span>
 
     /**
      * Creates a new instance of a &lt;code&gt;DateFormat&lt;/code&gt; for RFC1123 compliant dates.
@@ -146,52 +166,52 @@ public class WebbUtils {
      * @return a new instance
      */
     public static DateFormat getRfc1123DateFormat() {
-<span class="fc" id="L149">        DateFormat format = new SimpleDateFormat(</span>
+<span class="fc" id="L169">        DateFormat format = new SimpleDateFormat(</span>
                 &quot;EEE, dd MMM yyyy HH:mm:ss z&quot;, Locale.ENGLISH);
-<span class="fc" id="L151">        format.setLenient(false);</span>
-<span class="fc" id="L152">        format.setTimeZone(TimeZone.getTimeZone(&quot;UTC&quot;));</span>
-<span class="fc" id="L153">        return format;</span>
+<span class="fc" id="L171">        format.setLenient(false);</span>
+<span class="fc" id="L172">        format.setTimeZone(TimeZone.getTimeZone(&quot;UTC&quot;));</span>
+<span class="fc" id="L173">        return format;</span>
     }
 
     static String urlEncode(String value) {
         try {
-<span class="fc" id="L158">            return URLEncoder.encode(value, &quot;UTF-8&quot;);</span>
-<span class="nc" id="L159">        } catch (UnsupportedEncodingException e) {</span>
-<span class="nc" id="L160">            return value;</span>
+<span class="fc" id="L178">            return URLEncoder.encode(value, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L179">        } catch (UnsupportedEncodingException e) {</span>
+<span class="nc" id="L180">            return value;</span>
         }
     }
 
     static void addRequestProperties(HttpURLConnection connection, Map&lt;String, Object&gt; map) {
-<span class="pc bpc" id="L165" title="1 of 4 branches missed.">        if (map == null || map.isEmpty()) {</span>
-<span class="fc" id="L166">            return;</span>
+<span class="pc bpc" id="L185" title="1 of 4 branches missed.">        if (map == null || map.isEmpty()) {</span>
+<span class="fc" id="L186">            return;</span>
         }
-<span class="fc bfc" id="L168" title="All 2 branches covered.">        for (Map.Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
-<span class="fc" id="L169">            addRequestProperty(connection, entry.getKey(), entry.getValue());</span>
-<span class="fc" id="L170">        }</span>
-<span class="fc" id="L171">    }</span>
+<span class="fc bfc" id="L188" title="All 2 branches covered.">        for (Map.Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
+<span class="fc" id="L189">            addRequestProperty(connection, entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L190">        }</span>
+<span class="fc" id="L191">    }</span>
 
     static void addRequestProperty(HttpURLConnection connection, String name, Object value) {
-<span class="fc bfc" id="L174" title="All 6 branches covered.">        if (name == null || name.length() == 0 || value == null) {</span>
-<span class="fc" id="L175">            throw new IllegalArgumentException(&quot;name and value must not be empty&quot;);</span>
+<span class="fc bfc" id="L194" title="All 6 branches covered.">        if (name == null || name.length() == 0 || value == null) {</span>
+<span class="fc" id="L195">            throw new IllegalArgumentException(&quot;name and value must not be empty&quot;);</span>
         }
 
         String valueAsString;
-<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (value instanceof Date) {</span>
-<span class="fc" id="L180">            valueAsString = getRfc1123DateFormat().format((Date) value);</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">        } else if (value instanceof Calendar) {</span>
-<span class="fc" id="L182">            valueAsString = getRfc1123DateFormat().format(((Calendar) value).getTime());</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">        if (value instanceof Date) {</span>
+<span class="fc" id="L200">            valueAsString = getRfc1123DateFormat().format((Date) value);</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        } else if (value instanceof Calendar) {</span>
+<span class="fc" id="L202">            valueAsString = getRfc1123DateFormat().format(((Calendar) value).getTime());</span>
         } else {
-<span class="fc" id="L184">            valueAsString = value.toString();</span>
+<span class="fc" id="L204">            valueAsString = value.toString();</span>
         }
 
-<span class="fc" id="L187">        connection.addRequestProperty(name, valueAsString);</span>
-<span class="fc" id="L188">    }</span>
+<span class="fc" id="L207">        connection.addRequestProperty(name, valueAsString);</span>
+<span class="fc" id="L208">    }</span>
 
     static void ensureRequestProperty(HttpURLConnection connection, String name, Object value) {
-<span class="pc bpc" id="L191" title="1 of 2 branches missed.">        if (!connection.getRequestProperties().containsKey(name)) {</span>
-<span class="fc" id="L192">            addRequestProperty(connection, name, value);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (!connection.getRequestProperties().containsKey(name)) {</span>
+<span class="fc" id="L212">            addRequestProperty(connection, name, value);</span>
         }
-<span class="fc" id="L194">    }</span>
+<span class="fc" id="L214">    }</span>
 
     static byte[] getPayloadAsBytesAndSetContentType(
             HttpURLConnection connection,
@@ -199,51 +219,51 @@ public class WebbUtils {
             boolean compress,
             int jsonIndentFactor) throws JSONException, UnsupportedEncodingException {
 
-<span class="fc" id="L202">        byte[] requestBody = null;</span>
-<span class="fc" id="L203">        String bodyStr = null;</span>
+<span class="fc" id="L222">        byte[] requestBody = null;</span>
+<span class="fc" id="L223">        String bodyStr = null;</span>
 
-<span class="fc bfc" id="L205" title="All 2 branches covered.">        if (request.params != null) {</span>
-<span class="fc" id="L206">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_FORM);</span>
-<span class="fc" id="L207">            bodyStr = WebbUtils.queryString(request.params);</span>
-<span class="fc bfc" id="L208" title="All 2 branches covered.">        } else if (request.payload == null) {</span>
-<span class="fc" id="L209">            return null;</span>
-<span class="fc bfc" id="L210" title="All 2 branches covered.">        } else if (request.payload instanceof JSONObject) {</span>
-<span class="fc" id="L211">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
-<span class="pc bpc" id="L212" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
-<span class="pc" id="L213">                    ? ((JSONObject) request.payload).toString(jsonIndentFactor)</span>
-<span class="fc" id="L214">                    : request.payload.toString();</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">        } else if (request.payload instanceof JSONArray) {</span>
-<span class="fc" id="L216">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
-<span class="pc bpc" id="L217" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
-<span class="pc" id="L218">                    ? ((JSONArray) request.payload).toString(jsonIndentFactor)</span>
-<span class="fc" id="L219">                    : request.payload.toString();</span>
-<span class="fc bfc" id="L220" title="All 2 branches covered.">        } else if (request.payload instanceof byte[]) {</span>
-<span class="fc" id="L221">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);</span>
-<span class="fc" id="L222">            requestBody = (byte[]) request.payload;</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        if (request.params != null) {</span>
+<span class="fc" id="L226">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_FORM);</span>
+<span class="fc" id="L227">            bodyStr = WebbUtils.queryString(request.params);</span>
+<span class="fc bfc" id="L228" title="All 2 branches covered.">        } else if (request.payload == null) {</span>
+<span class="fc" id="L229">            return null;</span>
+<span class="fc bfc" id="L230" title="All 2 branches covered.">        } else if (request.payload instanceof JSONObject) {</span>
+<span class="fc" id="L231">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
+<span class="pc" id="L233">                    ? ((JSONObject) request.payload).toString(jsonIndentFactor)</span>
+<span class="fc" id="L234">                    : request.payload.toString();</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">        } else if (request.payload instanceof JSONArray) {</span>
+<span class="fc" id="L236">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_JSON);</span>
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">            bodyStr = jsonIndentFactor &gt;= 0</span>
+<span class="pc" id="L238">                    ? ((JSONArray) request.payload).toString(jsonIndentFactor)</span>
+<span class="fc" id="L239">                    : request.payload.toString();</span>
+<span class="fc bfc" id="L240" title="All 2 branches covered.">        } else if (request.payload instanceof byte[]) {</span>
+<span class="fc" id="L241">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);</span>
+<span class="fc" id="L242">            requestBody = (byte[]) request.payload;</span>
         } else {
-<span class="fc" id="L224">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);</span>
-<span class="fc" id="L225">            bodyStr = request.payload.toString();</span>
+<span class="fc" id="L244">            WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.TEXT_PLAIN);</span>
+<span class="fc" id="L245">            bodyStr = request.payload.toString();</span>
         }
-<span class="fc bfc" id="L227" title="All 2 branches covered.">        if (bodyStr != null) {</span>
-<span class="fc" id="L228">            requestBody = bodyStr.getBytes(Const.UTF8);</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        if (bodyStr != null) {</span>
+<span class="fc" id="L248">            requestBody = bodyStr.getBytes(Const.UTF8);</span>
         }
 
-<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (requestBody == null) {</span>
-<span class="nc" id="L232">            throw new IllegalStateException();</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">        if (requestBody == null) {</span>
+<span class="nc" id="L252">            throw new IllegalStateException();</span>
         }
 
         // only compress if the new body is smaller than uncompressed body
-<span class="pc bpc" id="L236" title="1 of 4 branches missed.">        if (compress &amp;&amp; requestBody.length &gt; Const.MIN_COMPRESSED_ADVANTAGE) {</span>
-<span class="fc" id="L237">            byte[] compressedBody = gzip(requestBody);</span>
-<span class="fc bfc" id="L238" title="All 2 branches covered.">            if (requestBody.length - compressedBody.length &gt; Const.MIN_COMPRESSED_ADVANTAGE) {</span>
-<span class="fc" id="L239">                requestBody = compressedBody;</span>
-<span class="fc" id="L240">                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, &quot;gzip&quot;);</span>
+<span class="pc bpc" id="L256" title="1 of 4 branches missed.">        if (compress &amp;&amp; requestBody.length &gt; Const.MIN_COMPRESSED_ADVANTAGE) {</span>
+<span class="fc" id="L257">            byte[] compressedBody = gzip(requestBody);</span>
+<span class="fc bfc" id="L258" title="All 2 branches covered.">            if (requestBody.length - compressedBody.length &gt; Const.MIN_COMPRESSED_ADVANTAGE) {</span>
+<span class="fc" id="L259">                requestBody = compressedBody;</span>
+<span class="fc" id="L260">                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, &quot;gzip&quot;);</span>
             }
         }
 
-<span class="fc" id="L244">        connection.setFixedLengthStreamingMode(requestBody.length);</span>
+<span class="fc" id="L264">        connection.setFixedLengthStreamingMode(requestBody.length);</span>
 
-<span class="fc" id="L246">        return requestBody;</span>
+<span class="fc" id="L266">        return requestBody;</span>
     }
 
     static void setContentTypeAndLengthForStreaming(
@@ -253,114 +273,114 @@ public class WebbUtils {
 
         long length;
 
-<span class="fc bfc" id="L256" title="All 2 branches covered.">        if (request.payload instanceof File) {</span>
-<span class="fc bfc" id="L257" title="All 2 branches covered.">            length = compress ? -1L : ((File) request.payload).length();</span>
-<span class="pc bpc" id="L258" title="1 of 2 branches missed.">        } else if (request.payload instanceof InputStream) {</span>
-<span class="fc" id="L259">            length = -1L;</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">        if (request.payload instanceof File) {</span>
+<span class="fc bfc" id="L277" title="All 2 branches covered.">            length = compress ? -1L : ((File) request.payload).length();</span>
+<span class="pc bpc" id="L278" title="1 of 2 branches missed.">        } else if (request.payload instanceof InputStream) {</span>
+<span class="fc" id="L279">            length = -1L;</span>
         } else {
-<span class="nc" id="L261">            throw new IllegalStateException();</span>
+<span class="nc" id="L281">            throw new IllegalStateException();</span>
         }
 
-<span class="pc bpc" id="L264" title="1 of 2 branches missed.">        if (length &gt; Integer.MAX_VALUE) {</span>
-<span class="nc" id="L265">            length = -1L; // use chunked streaming mode</span>
+<span class="pc bpc" id="L284" title="1 of 2 branches missed.">        if (length &gt; Integer.MAX_VALUE) {</span>
+<span class="nc" id="L285">            length = -1L; // use chunked streaming mode</span>
         }
 
-<span class="fc" id="L268">        WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);</span>
-<span class="fc bfc" id="L269" title="All 2 branches covered.">        if (length &lt; 0) {</span>
-<span class="fc" id="L270">            connection.setChunkedStreamingMode(-1); // use default chunk size</span>
-<span class="fc bfc" id="L271" title="All 2 branches covered.">            if (compress) {</span>
-<span class="fc" id="L272">                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, &quot;gzip&quot;);</span>
+<span class="fc" id="L288">        WebbUtils.ensureRequestProperty(connection, Const.HDR_CONTENT_TYPE, Const.APP_BINARY);</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">        if (length &lt; 0) {</span>
+<span class="fc" id="L290">            connection.setChunkedStreamingMode(-1); // use default chunk size</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">            if (compress) {</span>
+<span class="fc" id="L292">                connection.setRequestProperty(Const.HDR_CONTENT_ENCODING, &quot;gzip&quot;);</span>
             }
         } else {
-<span class="fc" id="L275">            connection.setFixedLengthStreamingMode((int) length);</span>
+<span class="fc" id="L295">            connection.setFixedLengthStreamingMode((int) length);</span>
         }
-<span class="fc" id="L277">    }</span>
+<span class="fc" id="L297">    }</span>
 
     static byte[] gzip(byte[] input) {
-<span class="fc" id="L280">        GZIPOutputStream gzipOS = null;</span>
+<span class="fc" id="L300">        GZIPOutputStream gzipOS = null;</span>
         try {
-<span class="fc" id="L282">            ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();</span>
-<span class="fc" id="L283">            gzipOS = new GZIPOutputStream(byteArrayOS);</span>
-<span class="fc" id="L284">            gzipOS.write(input);</span>
-<span class="fc" id="L285">            gzipOS.flush();</span>
-<span class="fc" id="L286">            gzipOS.close();</span>
-<span class="fc" id="L287">            gzipOS = null;</span>
-<span class="fc" id="L288">            return byteArrayOS.toByteArray();</span>
-<span class="fc" id="L289">        } catch (Exception e) {</span>
-<span class="fc" id="L290">            throw new WebbException(e);</span>
+<span class="fc" id="L302">            ByteArrayOutputStream byteArrayOS = new ByteArrayOutputStream();</span>
+<span class="fc" id="L303">            gzipOS = new GZIPOutputStream(byteArrayOS);</span>
+<span class="fc" id="L304">            gzipOS.write(input);</span>
+<span class="fc" id="L305">            gzipOS.flush();</span>
+<span class="fc" id="L306">            gzipOS.close();</span>
+<span class="fc" id="L307">            gzipOS = null;</span>
+<span class="fc" id="L308">            return byteArrayOS.toByteArray();</span>
+<span class="fc" id="L309">        } catch (Exception e) {</span>
+<span class="fc" id="L310">            throw new WebbException(e);</span>
         } finally {
-<span class="pc bpc" id="L292" title="2 of 4 branches missed.">            if (gzipOS != null) {</span>
-<span class="pc" id="L293">                try { gzipOS.close(); } catch (Exception ignored) {}</span>
+<span class="pc bpc" id="L312" title="2 of 4 branches missed.">            if (gzipOS != null) {</span>
+<span class="pc" id="L313">                try { gzipOS.close(); } catch (Exception ignored) {}</span>
             }
         }
     }
 
     static InputStream wrapStream(String contentEncoding, InputStream inputStream) throws IOException {
-<span class="fc bfc" id="L299" title="All 4 branches covered.">        if (contentEncoding == null || &quot;identity&quot;.equalsIgnoreCase(contentEncoding)) {</span>
-<span class="fc" id="L300">            return inputStream;</span>
+<span class="fc bfc" id="L319" title="All 4 branches covered.">        if (contentEncoding == null || &quot;identity&quot;.equalsIgnoreCase(contentEncoding)) {</span>
+<span class="fc" id="L320">            return inputStream;</span>
         }
-<span class="fc bfc" id="L302" title="All 2 branches covered.">        if (&quot;gzip&quot;.equalsIgnoreCase(contentEncoding)) {</span>
-<span class="fc" id="L303">            return new GZIPInputStream(inputStream);</span>
+<span class="fc bfc" id="L322" title="All 2 branches covered.">        if (&quot;gzip&quot;.equalsIgnoreCase(contentEncoding)) {</span>
+<span class="fc" id="L323">            return new GZIPInputStream(inputStream);</span>
         }
-<span class="fc bfc" id="L305" title="All 2 branches covered.">        if (&quot;deflate&quot;.equalsIgnoreCase(contentEncoding)) {</span>
-<span class="fc" id="L306">            return new InflaterInputStream(inputStream, new Inflater(false), 512);</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        if (&quot;deflate&quot;.equalsIgnoreCase(contentEncoding)) {</span>
+<span class="fc" id="L326">            return new InflaterInputStream(inputStream, new Inflater(false), 512);</span>
         }
-<span class="fc" id="L308">        throw new WebbException(&quot;unsupported content-encoding: &quot; + contentEncoding);</span>
+<span class="fc" id="L328">        throw new WebbException(&quot;unsupported content-encoding: &quot; + contentEncoding);</span>
     }
 
     static &lt;T&gt; void parseResponseBody(Class&lt;T&gt; clazz, Response&lt;T&gt; response, byte[] responseBody)
             throws UnsupportedEncodingException {
 
-<span class="fc bfc" id="L314" title="All 4 branches covered.">        if (responseBody == null || clazz == Void.class) {</span>
-<span class="fc" id="L315">            return;</span>
+<span class="fc bfc" id="L334" title="All 4 branches covered.">        if (responseBody == null || clazz == Void.class) {</span>
+<span class="fc" id="L335">            return;</span>
         }
 
         // we are ignoring headers describing the content type of the response, instead
         // try to force the content based on the type the client is expecting it (clazz)
-<span class="fc bfc" id="L320" title="All 2 branches covered.">        if (clazz == String.class) {</span>
-<span class="fc" id="L321">            response.setBody(new String(responseBody, Const.UTF8));</span>
-<span class="fc bfc" id="L322" title="All 2 branches covered.">        } else if (clazz == Const.BYTE_ARRAY_CLASS) {</span>
-<span class="fc" id="L323">            response.setBody(responseBody);</span>
-<span class="fc bfc" id="L324" title="All 2 branches covered.">        } else if (clazz == JSONObject.class) {</span>
-<span class="fc" id="L325">            response.setBody(WebbUtils.toJsonObject(responseBody));</span>
-<span class="pc bpc" id="L326" title="1 of 2 branches missed.">        } else if (clazz == JSONArray.class) {</span>
-<span class="fc" id="L327">            response.setBody(WebbUtils.toJsonArray(responseBody));</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">        if (clazz == String.class) {</span>
+<span class="fc" id="L341">            response.setBody(new String(responseBody, Const.UTF8));</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">        } else if (clazz == Const.BYTE_ARRAY_CLASS) {</span>
+<span class="fc" id="L343">            response.setBody(responseBody);</span>
+<span class="fc bfc" id="L344" title="All 2 branches covered.">        } else if (clazz == JSONObject.class) {</span>
+<span class="fc" id="L345">            response.setBody(WebbUtils.toJsonObject(responseBody));</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">        } else if (clazz == JSONArray.class) {</span>
+<span class="fc" id="L347">            response.setBody(WebbUtils.toJsonArray(responseBody));</span>
         }
-<span class="fc" id="L329">    }</span>
+<span class="fc" id="L349">    }</span>
 
     static &lt;T&gt; void parseErrorResponse(Class&lt;T&gt; clazz, Response&lt;T&gt; response, byte[] responseBody)
             throws UnsupportedEncodingException {
 
-<span class="fc bfc" id="L334" title="All 2 branches covered.">        if (responseBody == null) {</span>
-<span class="fc" id="L335">            return;</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">        if (responseBody == null) {</span>
+<span class="fc" id="L355">            return;</span>
         }
 
-<span class="fc" id="L338">        String contentType = response.connection.getContentType();</span>
-<span class="pc bpc" id="L339" title="1 of 6 branches missed.">        if (contentType == null || contentType.startsWith(Const.APP_BINARY) || clazz == Const.BYTE_ARRAY_CLASS) {</span>
-<span class="fc" id="L340">            response.errorBody = responseBody;</span>
-<span class="fc" id="L341">            return;</span>
+<span class="fc" id="L358">        String contentType = response.connection.getContentType();</span>
+<span class="pc bpc" id="L359" title="1 of 6 branches missed.">        if (contentType == null || contentType.startsWith(Const.APP_BINARY) || clazz == Const.BYTE_ARRAY_CLASS) {</span>
+<span class="fc" id="L360">            response.errorBody = responseBody;</span>
+<span class="fc" id="L361">            return;</span>
         }
 
-<span class="fc bfc" id="L344" title="All 4 branches covered.">        if (contentType.startsWith(Const.APP_JSON) &amp;&amp; clazz == JSONObject.class) {</span>
+<span class="fc bfc" id="L364" title="All 4 branches covered.">        if (contentType.startsWith(Const.APP_JSON) &amp;&amp; clazz == JSONObject.class) {</span>
             try {
-<span class="fc" id="L346">                response.errorBody = WebbUtils.toJsonObject(responseBody);</span>
-<span class="fc" id="L347">                return;</span>
-<span class="nc" id="L348">            } catch (Exception ignored) {</span>
+<span class="fc" id="L366">                response.errorBody = WebbUtils.toJsonObject(responseBody);</span>
+<span class="fc" id="L367">                return;</span>
+<span class="nc" id="L368">            } catch (Exception ignored) {</span>
                 // ignored - was just a try!
             }
         }
 
         // fallback to String if bytes are valid UTF-8 characters ...
         try {
-<span class="fc" id="L355">            response.errorBody = new String(responseBody, Const.UTF8);</span>
-<span class="fc" id="L356">            return;</span>
-<span class="nc" id="L357">        } catch (Exception ignored) {</span>
+<span class="fc" id="L375">            response.errorBody = new String(responseBody, Const.UTF8);</span>
+<span class="fc" id="L376">            return;</span>
+<span class="nc" id="L377">        } catch (Exception ignored) {</span>
             // ignored - was just a try!
         }
 
         // last fallback - return error object as byte[]
-<span class="nc" id="L362">        response.errorBody = responseBody;</span>
-<span class="nc" id="L363">    }</span>
+<span class="nc" id="L382">        response.errorBody = responseBody;</span>
+<span class="nc" id="L383">    }</span>
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>

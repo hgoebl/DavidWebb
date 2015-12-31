@@ -282,10 +282,10 @@ public class Webb {
 <span class="fc bfc" id="L282" title="All 4 branches covered.">                    if (tries &gt;= request.retryCount || !retryManager.isRetryUseful(response)) {</span>
 <span class="fc" id="L283">                        break;</span>
                     }
-<span class="nc" id="L285">                } catch (WebbException we) {</span>
+<span class="fc" id="L285">                } catch (WebbException we) {</span>
                     // analyze: is exception recoverable?
-<span class="nc bnc" id="L287" title="All 4 branches missed.">                    if (tries &gt;= request.retryCount || !retryManager.isRecoverable(we)) {</span>
-<span class="nc" id="L288">                        throw we;</span>
+<span class="pc bpc" id="L287" title="2 of 4 branches missed.">                    if (tries &gt;= request.retryCount || !retryManager.isRecoverable(we)) {</span>
+<span class="fc" id="L288">                        throw we;</span>
                     }
 <span class="fc" id="L290">                }</span>
 <span class="pc bpc" id="L291" title="1 of 2 branches missed.">                if (request.waitExponential) {</span>
@@ -442,10 +442,10 @@ public class Webb {
 <span class="fc" id="L442">            WebbUtils.copyStream(is, os);</span>
 <span class="fc" id="L443">            os.flush();</span>
         } finally {
-<span class="pc bpc" id="L445" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc bpc" id="L445" title="2 of 4 branches missed.">            if (os != null) {</span>
 <span class="pc" id="L446">                try { os.close(); } catch (Exception ignored) {}</span>
             }
-<span class="pc bpc" id="L448" title="5 of 8 branches missed.">            if (is != null &amp;&amp; closeStream) {</span>
+<span class="pc bpc" id="L448" title="2 of 8 branches missed.">            if (is != null &amp;&amp; closeStream) {</span>
 <span class="pc" id="L449">                try { is.close(); } catch (Exception ignored) {}</span>
             }
         }

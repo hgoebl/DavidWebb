@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,8 +20,8 @@ import java.util.Map;
  * @author hgoebl
  */
 public class Request {
-<span class="pc" id="L21">    public enum Method {</span>
-<span class="fc" id="L22">        GET, POST, PUT, DELETE</span>
+<span class="pc" id="L23">    public enum Method {</span>
+<span class="fc" id="L24">        GET, POST, PUT, DELETE</span>
     }
 
     private final Webb webb;
@@ -27,6 +29,7 @@ public class Request {
     final String uri;
 
     Map&lt;String, Object&gt; params;
+    boolean multipleValues;
     Map&lt;String, Object&gt; headers;
     Object payload;
     boolean streamPayload;
@@ -40,29 +43,92 @@ public class Request {
     int retryCount;
     boolean waitExponential;
 
-<span class="fc" id="L43">    Request(Webb webb, Method method, String uri) {</span>
-<span class="fc" id="L44">        this.webb = webb;</span>
-<span class="fc" id="L45">        this.method = method;</span>
-<span class="fc" id="L46">        this.uri = uri;</span>
-<span class="fc" id="L47">        this.followRedirects = webb.followRedirects;</span>
-<span class="fc" id="L48">    }</span>
+<span class="fc" id="L46">    Request(Webb webb, Method method, String uri) {</span>
+<span class="fc" id="L47">        this.webb = webb;</span>
+<span class="fc" id="L48">        this.method = method;</span>
+<span class="fc" id="L49">        this.uri = uri;</span>
+<span class="fc" id="L50">        this.followRedirects = webb.followRedirects;</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Turn on a mode where one parameter key can have multiple values.
+     * &lt;br&gt;
+     * Example: &lt;code&gt;order.php?fruit=orange&amp;amp;fruit=apple&amp;amp;fruit=banana&lt;/code&gt;
+     * &lt;br&gt;
+     * This is only necessary when you want to call {@link #param(String, Object)} multiple
+     * times with the same parameter name and this should lead to having multiple values.
+     * If you call {@link #param(String, Iterable)} or already provide an Array as value parameter,
+     * you don't have to call this method and it should work as expected.
+     *
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     * @since 1.3.0
+     */
+    public Request multipleValues() {
+<span class="fc" id="L67">        multipleValues = true;</span>
+<span class="fc" id="L68">        return this;</span>
+    }
 
     /**
      * Set (or overwrite) a parameter.
      * &lt;br&gt;
      * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
-     * with MIME-type &lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;,
+     * with MIME-type &lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;.
+     * &lt;br&gt;
+     * Please see {@link #multipleValues()} if you have to deal with parameters carrying multiple values.
+     * &lt;br&gt;
+     * Handling of multi-valued parameters exists since version 1.3.0
+     *
      * @param name the name of the parameter (it's better to use only contain ASCII characters)
-     * @param value the value of the parameter; &lt;code&gt;null&lt;/code&gt; will be converted to empty string, for all other
+     * @param value the value of the parameter; &lt;code&gt;null&lt;/code&gt; will be converted to empty string,
+     *              Arrays of Objects are expanded to multiple valued parameters, for all other
      *              objects to &lt;code&gt;toString()&lt;/code&gt; method converts it to String
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request param(String name, Object value) {
-<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (params == null) {</span>
-<span class="fc" id="L62">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (params == null) {</span>
+<span class="fc" id="L89">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L64">        params.put(name, value);</span>
-<span class="fc" id="L65">        return this;</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (multipleValues) {</span>
+<span class="fc" id="L92">            Object currentValue = params.get(name);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">            if (currentValue != null) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">                if (currentValue instanceof Collection) {</span>
+<span class="fc" id="L95">                    Collection&lt;Object&gt; values = (Collection) currentValue;</span>
+<span class="fc" id="L96">                    values.add(value);</span>
+<span class="fc" id="L97">                } else {</span>
+                    // upgrade single value to set of values
+<span class="fc" id="L99">                    Collection&lt;Object&gt; values = new ArrayList&lt;Object&gt;();</span>
+<span class="fc" id="L100">                    values.add(currentValue);</span>
+<span class="fc" id="L101">                    values.add(value);</span>
+<span class="fc" id="L102">                    params.put(name, values);</span>
+                }
+<span class="fc" id="L104">                return this;</span>
+            }
+        }
+<span class="fc" id="L107">        params.put(name, value);</span>
+<span class="fc" id="L108">        return this;</span>
+    }
+
+    /**
+     * Set (or overwrite) a parameter with multiple values.
+     * &lt;br&gt;
+     * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
+     * with MIME-type &lt;code&gt;application/x-www-form-urlencoded&lt;/code&gt;.
+     * &lt;br&gt;
+     * If you use this method, you don't have to call {@link #multipleValues()}, but you should not mix
+     * using {@link #param(String, Object)} and this method for the same parameter name as this might cause
+     * unexpected behaviour or exceptions.
+     *
+     * @param name the name of the parameter (it's better to use only contain ASCII characters)
+     * @param values the values of the parameter; will be expanded to multiple valued parameters.
+     * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
+     * @since 1.3.0
+     */
+    public Request param(String name, Iterable&lt;Object&gt; values) {
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        if (params == null) {</span>
+<span class="nc" id="L128">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+        }
+<span class="fc" id="L130">        params.put(name, values);</span>
+<span class="fc" id="L131">        return this;</span>
     }
 
     /**
@@ -75,11 +141,11 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request params(Map&lt;String, Object&gt; valueByName) {
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (params == null) {</span>
-<span class="fc" id="L79">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (params == null) {</span>
+<span class="fc" id="L145">            params = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L81">        params.putAll(valueByName);</span>
-<span class="fc" id="L82">        return this;</span>
+<span class="fc" id="L147">        params.putAll(valueByName);</span>
+<span class="fc" id="L148">        return this;</span>
     }
 
     /**
@@ -88,7 +154,7 @@ public class Request {
      * @return URI
      */
     public String getUri() {
-<span class="fc" id="L91">        return uri;</span>
+<span class="fc" id="L157">        return uri;</span>
     }
 
     /**
@@ -112,11 +178,11 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request header(String name, Object value) {
-<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (headers == null) {</span>
-<span class="fc" id="L116">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (headers == null) {</span>
+<span class="fc" id="L182">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
         }
-<span class="fc" id="L118">        headers.put(name, value);</span>
-<span class="fc" id="L119">        return this;</span>
+<span class="fc" id="L184">        headers.put(name, value);</span>
+<span class="fc" id="L185">        return this;</span>
     }
 
     /**
@@ -164,12 +230,12 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request body(Object body) {
-<span class="fc bfc" id="L167" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
-<span class="fc" id="L168">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
+<span class="fc bfc" id="L233" title="All 4 branches covered.">        if (method == Method.GET || method == Method.DELETE) {</span>
+<span class="fc" id="L234">            throw new IllegalStateException(&quot;body not allowed for request method &quot; + method);</span>
         }
-<span class="fc" id="L170">        this.payload = body;</span>
-<span class="fc bfc" id="L171" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
-<span class="fc" id="L172">        return this;</span>
+<span class="fc" id="L236">        this.payload = body;</span>
+<span class="fc bfc" id="L237" title="All 4 branches covered.">        this.streamPayload = body instanceof File || body instanceof InputStream;</span>
+<span class="fc" id="L238">        return this;</span>
     }
 
     /**
@@ -186,8 +252,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request compress() {
-<span class="fc" id="L189">        compress = true;</span>
-<span class="fc" id="L190">        return this;</span>
+<span class="fc" id="L255">        compress = true;</span>
+<span class="fc" id="L256">        return this;</span>
     }
 
     /**
@@ -201,8 +267,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request useCaches(boolean useCaches) {
-<span class="fc" id="L204">        this.useCaches = useCaches;</span>
-<span class="fc" id="L205">        return this;</span>
+<span class="fc" id="L270">        this.useCaches = useCaches;</span>
+<span class="fc" id="L271">        return this;</span>
     }
 
     /**
@@ -213,8 +279,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ifModifiedSince(long ifModifiedSince) {
-<span class="fc" id="L216">        this.ifModifiedSince = ifModifiedSince;</span>
-<span class="fc" id="L217">        return this;</span>
+<span class="fc" id="L282">        this.ifModifiedSince = ifModifiedSince;</span>
+<span class="fc" id="L283">        return this;</span>
     }
 
     /**
@@ -224,8 +290,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request connectTimeout(int connectTimeout) {
-<span class="fc" id="L227">        this.connectTimeout = connectTimeout;</span>
-<span class="fc" id="L228">        return this;</span>
+<span class="fc" id="L293">        this.connectTimeout = connectTimeout;</span>
+<span class="fc" id="L294">        return this;</span>
     }
 
     /**
@@ -236,8 +302,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request readTimeout(int readTimeout) {
-<span class="fc" id="L239">        this.readTimeout = readTimeout;</span>
-<span class="fc" id="L240">        return this;</span>
+<span class="fc" id="L305">        this.readTimeout = readTimeout;</span>
+<span class="fc" id="L306">        return this;</span>
     }
 
     /**
@@ -251,8 +317,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request followRedirects(boolean auto) {
-<span class="fc" id="L254">        this.followRedirects = auto;</span>
-<span class="fc" id="L255">        return this;</span>
+<span class="fc" id="L320">        this.followRedirects = auto;</span>
+<span class="fc" id="L321">        return this;</span>
     }
 
     /**
@@ -265,8 +331,8 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request ensureSuccess() {
-<span class="fc" id="L268">        this.ensureSuccess = true;</span>
-<span class="fc" id="L269">        return this;</span>
+<span class="fc" id="L334">        this.ensureSuccess = true;</span>
+<span class="fc" id="L335">        return this;</span>
     }
 
     /**
@@ -286,18 +352,18 @@ public class Request {
      * @return &lt;code&gt;this&lt;/code&gt; for method chaining (fluent API)
      */
     public Request retry(int retryCount, boolean waitExponential) {
-<span class="pc bpc" id="L289" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
-<span class="nc" id="L290">            retryCount = 0;</span>
+<span class="pc bpc" id="L355" title="1 of 2 branches missed.">        if (retryCount &lt; 0) {</span>
+<span class="nc" id="L356">            retryCount = 0;</span>
         }
-<span class="pc bpc" id="L292" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
-<span class="nc" id="L293">            retryCount = 10;</span>
+<span class="pc bpc" id="L358" title="1 of 2 branches missed.">        if (retryCount &gt; 10) {</span>
+<span class="nc" id="L359">            retryCount = 10;</span>
         }
-<span class="pc bpc" id="L295" title="1 of 4 branches missed.">        if (retryCount &gt; 3 &amp;&amp; !waitExponential) {</span>
-<span class="fc" id="L296">            throw new IllegalArgumentException(&quot;retries &gt; 3 only valid with wait&quot;);</span>
+<span class="pc bpc" id="L361" title="1 of 4 branches missed.">        if (retryCount &gt; 3 &amp;&amp; !waitExponential) {</span>
+<span class="fc" id="L362">            throw new IllegalArgumentException(&quot;retries &gt; 3 only valid with wait&quot;);</span>
         }
-<span class="fc" id="L298">        this.retryCount = retryCount;</span>
-<span class="fc" id="L299">        this.waitExponential = waitExponential;</span>
-<span class="fc" id="L300">        return this;</span>
+<span class="fc" id="L364">        this.retryCount = retryCount;</span>
+<span class="fc" id="L365">        this.waitExponential = waitExponential;</span>
+<span class="fc" id="L366">        return this;</span>
     }
 
     /**
@@ -305,7 +371,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;String&lt;/code&gt;
      */
     public Response&lt;String&gt; asString() {
-<span class="fc" id="L308">        return webb.execute(this, String.class);</span>
+<span class="fc" id="L374">        return webb.execute(this, String.class);</span>
     }
 
     /**
@@ -313,7 +379,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONObject&lt;/code&gt;
      */
     public Response&lt;JSONObject&gt; asJsonObject() {
-<span class="fc" id="L316">        return webb.execute(this, JSONObject.class);</span>
+<span class="fc" id="L382">        return webb.execute(this, JSONObject.class);</span>
     }
 
     /**
@@ -321,7 +387,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;JSONArray&lt;/code&gt;
      */
     public Response&lt;JSONArray&gt; asJsonArray() {
-<span class="fc" id="L324">        return webb.execute(this, JSONArray.class);</span>
+<span class="fc" id="L390">        return webb.execute(this, JSONArray.class);</span>
     }
 
     /**
@@ -329,7 +395,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;byte[]&lt;/code&gt;
      */
     public Response&lt;byte[]&gt; asBytes() {
-<span class="fc" id="L332">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
+<span class="fc" id="L398">        return (Response&lt;byte[]&gt;) webb.execute(this, Const.BYTE_ARRAY_CLASS);</span>
     }
 
     /**
@@ -337,7 +403,7 @@ public class Request {
      * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
      */
     public Response&lt;Void&gt; asVoid() {
-<span class="fc" id="L340">        return webb.execute(this, Void.class);</span>
+<span class="fc" id="L406">        return webb.execute(this, Void.class);</span>
     }
 
 }
