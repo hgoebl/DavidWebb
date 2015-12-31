@@ -36,6 +36,7 @@ lightweight (~18 KB jar) and super-easy to use.
   * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
   * pass-through to "real" connection for special cases
   * option to retry the request in case of special errors (503, 504, 'connection reset by peer')
+  * multi-valued parameters (since 1.3.0-SNAPSHOT)
 
 ## Non-Features ##
 

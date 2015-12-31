@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -27,6 +29,7 @@ public class Request {
     final String uri;
 
     Map<String, Object> params;
+    boolean multipleValues;
     Map<String, Object> headers;
     Object payload;
     boolean streamPayload;
@@ -48,12 +51,36 @@ public class Request {
     }
 
     /**
+     * Turn on a mode where one parameter key can have multiple values.
+     * <br>
+     * Example: <code>order.php?fruit=orange&amp;fruit=apple&amp;fruit=banana</code>
+     * <br>
+     * This is only necessary when you want to call {@link #param(String, Object)} multiple
+     * times with the same parameter name and this should lead to having multiple values.
+     * If you call {@link #param(String, Iterable)} or already provide an Array as value parameter,
+     * you don't have to call this method and it should work as expected.
+     *
+     * @return <code>this</code> for method chaining (fluent API)
+     * @since 1.3.0
+     */
+    public Request multipleValues() {
+        multipleValues = true;
+        return this;
+    }
+
+    /**
      * Set (or overwrite) a parameter.
      * <br>
      * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
-     * with MIME-type <code>application/x-www-form-urlencoded</code>,
+     * with MIME-type <code>application/x-www-form-urlencoded</code>.
+     * <br>
+     * Please see {@link #multipleValues()} if you have to deal with parameters carrying multiple values.
+     * <br>
+     * Handling of multi-valued parameters exists since version 1.3.0
+     *
      * @param name the name of the parameter (it's better to use only contain ASCII characters)
-     * @param value the value of the parameter; <code>null</code> will be converted to empty string, for all other
+     * @param value the value of the parameter; <code>null</code> will be converted to empty string,
+     *              Arrays of Objects are expanded to multiple valued parameters, for all other
      *              objects to <code>toString()</code> method converts it to String
      * @return <code>this</code> for method chaining (fluent API)
      */
@@ -61,7 +88,46 @@ public class Request {
         if (params == null) {
             params = new LinkedHashMap<String, Object>();
         }
+        if (multipleValues) {
+            Object currentValue = params.get(name);
+            if (currentValue != null) {
+                if (currentValue instanceof Collection) {
+                    Collection<Object> values = (Collection) currentValue;
+                    values.add(value);
+                } else {
+                    // upgrade single value to set of values
+                    Collection<Object> values = new ArrayList<Object>();
+                    values.add(currentValue);
+                    values.add(value);
+                    params.put(name, values);
+                }
+                return this;
+            }
+        }
         params.put(name, value);
+        return this;
+    }
+
+    /**
+     * Set (or overwrite) a parameter with multiple values.
+     * <br>
+     * The parameter will be used to create a query string for GET-requests and as the body for POST-requests
+     * with MIME-type <code>application/x-www-form-urlencoded</code>.
+     * <br>
+     * If you use this method, you don't have to call {@link #multipleValues()}, but you should not mix
+     * using {@link #param(String, Object)} and this method for the same parameter name as this might cause
+     * unexpected behaviour or exceptions.
+     *
+     * @param name the name of the parameter (it's better to use only contain ASCII characters)
+     * @param values the values of the parameter; will be expanded to multiple valued parameters.
+     * @return <code>this</code> for method chaining (fluent API)
+     * @since 1.3.0
+     */
+    public Request param(String name, Iterable<Object> values) {
+        if (params == null) {
+            params = new LinkedHashMap<String, Object>();
+        }
+        params.put(name, values);
         return this;
     }
 

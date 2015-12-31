@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -30,6 +31,27 @@ public class TestWebbUtils_NoMock extends TestCase {
         map.clear();
         map.put("email", "abc@abc.com");
         assertEquals("uri-encode value", "email=abc%40abc.com", WebbUtils.queryString(map));
+    }
+
+    public void testQueryStringMultiValuesObjectArray() throws Exception {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+
+        map.put("m", new Object[]{"abc", 1, true, "abc@abc.com"});
+        assertEquals("multi-values", "m=abc&m=1&m=true&m=abc%40abc.com", WebbUtils.queryString(map));
+    }
+
+    public void testQueryStringMultiValuesStringArray() throws Exception {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+
+        map.put("m", new String[]{"abc", "1", "true", "abc@abc.com"});
+        assertEquals("multi-values", "m=abc&m=1&m=true&m=abc%40abc.com", WebbUtils.queryString(map));
+    }
+
+    public void testQueryStringMultiValuesCollection() throws Exception {
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
+
+        map.put("m", Arrays.asList("abc", 1, true, "abc@abc.com"));
+        assertEquals("multi-values", "m=abc&m=1&m=true&m=abc%40abc.com", WebbUtils.queryString(map));
     }
 
     public void testUrlEncode() throws Exception {

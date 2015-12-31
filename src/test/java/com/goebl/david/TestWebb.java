@@ -3,6 +3,7 @@ package com.goebl.david;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -164,7 +165,8 @@ public class TestWebb extends AbstractTestWebb {
         Response<String> response = webb
                 .get("/parameter-types")
                 .param("string", SIMPLE_ASCII)
-                .param("number", 4711)
+                .param("number", 815)
+                .param("number", 4711) // test overwrite feature of multiple calls with same name
                 .param("null", null)
                 .param("empty", "")
                 .asString();
@@ -181,6 +183,39 @@ public class TestWebb extends AbstractTestWebb {
         Response<String> response = webb
                 .get("/parameter-types")
                 .params(params)
+                .asString();
+
+        assertEquals(204, response.getStatusCode());
+    }
+
+    public void testMultiValuesParameterArray() throws Exception {
+        Object values = new Object[]{"abc", 1, true, "abc@abc.com"};
+        Response<String> response = webb
+                .get("/multiple-valued-parameter")
+                .param("m", values)
+                .asString();
+
+        assertEquals(204, response.getStatusCode());
+    }
+
+    public void testMultiValuesParameterIterable() throws Exception {
+        Object values = Arrays.asList("abc", 1, true, "abc@abc.com");
+        Response<String> response = webb
+                .get("/multiple-valued-parameter")
+                .param("m", values)
+                .asString();
+
+        assertEquals(204, response.getStatusCode());
+    }
+
+    public void testMultiValuesParameterSimple() throws Exception {
+        Response<String> response = webb
+                .get("/multiple-valued-parameter")
+                .multipleValues()
+                .param("m", "abc")
+                .param("m", 1)
+                .param("m", true)
+                .param("m", "abc@abc.com")
                 .asString();
 
         assertEquals(204, response.getStatusCode());

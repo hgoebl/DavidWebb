@@ -45,15 +45,32 @@ public class WebbUtils {
         String separator = "";
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
-            String value = entry.getValue() == null ? "" : String.valueOf(entry.getValue());
-            sbuf.append(separator);
-            sbuf.append(urlEncode(entry.getKey()));
-            sbuf.append('=');
-            sbuf.append(urlEncode(value));
-            separator = "&";
+            Object entryValue = entry.getValue();
+            if (entryValue instanceof Object[]) {
+                for (Object value : (Object[]) entryValue) {
+                    appendParam(sbuf, separator, entry.getKey(), value);
+                    separator = "&";
+                }
+            } else if (entryValue instanceof Iterable) {
+                for (Object multiValue : (Iterable) entryValue) {
+                    appendParam(sbuf, separator, entry.getKey(), multiValue);
+                    separator = "&";
+                }
+            } else {
+                appendParam(sbuf, separator, entry.getKey(), entryValue);
+                separator = "&";
+            }
         }
 
         return sbuf.toString();
+    }
+
+    private static void appendParam(StringBuilder sbuf, String separator, String entryKey, Object value) {
+        String sValue = value == null ? "" : String.valueOf(value);
+        sbuf.append(separator);
+        sbuf.append(urlEncode(entryKey));
+        sbuf.append('=');
+        sbuf.append(urlEncode(sValue));
     }
 
     /**

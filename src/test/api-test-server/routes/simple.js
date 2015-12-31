@@ -40,4 +40,13 @@ module.exports = function registerRoutes(app) {
 
         res.send(ok ? 204 : 500);
     });
+
+    app.get('/multiple-valued-parameter', function (req, res) {
+        var m = req.param('m');
+
+        var ok = m.length && m.length === 4 &&
+            m[0] === 'abc' && m[1] === '1' && m[2] === 'true' && m[3] === 'abc@abc.com';
+
+        res.send(ok ? 204 : 500);
+    });
 };
