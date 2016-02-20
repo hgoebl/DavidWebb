@@ -37,6 +37,8 @@ lightweight (~18 KB jar) and super-easy to use.
   * pass-through to "real" connection for special cases
   * option to retry the request in case of special errors (503, 504, 'connection reset by peer')
   * multi-valued parameters (since 1.3.0-SNAPSHOT)
+  * use streams as input and output (automatically closing underlying HttpURLConnection when stream
+    is closed, since 1.3.0-SNAPSHOT)
 
 ## Non-Features ##
 
@@ -284,3 +286,7 @@ Create an issue if you want to have one of those ideas implemented.
 ## Testing
   * Higher coverage
   * Test against httpbin.org
+
+# Contributors
+
+ * [essobedo](https://github.com/essobedo)
