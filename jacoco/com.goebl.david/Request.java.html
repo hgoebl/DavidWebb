@@ -399,11 +399,19 @@ public class Request {
     }
 
     /**
+     * Execute the request and expect the result to be convertible to &lt;code&gt;InputStream&lt;/code&gt;.
+     * @return the created &lt;code&gt;Response&lt;/code&gt; object carrying the payload from the server as &lt;code&gt;InputStream&lt;/code&gt;
+     */
+    public Response&lt;InputStream&gt; asStream() {
+<span class="fc" id="L406">        return webb.execute(this, InputStream.class);</span>
+    }
+
+    /**
      * Execute the request and expect no result payload (only status-code and headers).
      * @return the created &lt;code&gt;Response&lt;/code&gt; object where no payload is expected or simply will be ignored.
      */
     public Response&lt;Void&gt; asVoid() {
-<span class="fc" id="L406">        return webb.execute(this, Void.class);</span>
+<span class="fc" id="L414">        return webb.execute(this, Void.class);</span>
     }
 
 }

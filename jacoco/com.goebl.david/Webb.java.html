@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../resources/report.css" type="text/css"/><link rel="shortcut icon" href="../resources/report.gif" type="image/gif"/><title>Webb.java</title><link rel="stylesheet" href="../resources/prettify.css" type="text/css"/><script type="text/javascript" src="../resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">DavidWebb</a> &gt; <a href="index.source.html" class="el_package">com.goebl.david</a> &gt; <span class="el_source">Webb.java</span></div><h1>Webb.java</h1><pre class="source lang-java linenums">package com.goebl.david;
 
+import java.io.FilterInputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -36,12 +37,12 @@ public class Webb {
     public static final String HDR_USER_AGENT = Const.HDR_USER_AGENT;
     public static final String HDR_AUTHORIZATION = &quot;Authorization&quot;;
 
-<span class="fc" id="L39">    static final Map&lt;String, Object&gt; globalHeaders = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L40">    static final Map&lt;String, Object&gt; globalHeaders = new LinkedHashMap&lt;String, Object&gt;();</span>
     static String globalBaseUri;
 
-<span class="fc" id="L42">    static Integer connectTimeout = 10000; // 10 seconds</span>
-<span class="fc" id="L43">    static Integer readTimeout = 3 * 60000; // 5 minutes</span>
-<span class="fc" id="L44">    static int jsonIndentFactor = -1;</span>
+<span class="fc" id="L43">    static Integer connectTimeout = 10000; // 10 seconds</span>
+<span class="fc" id="L44">    static Integer readTimeout = 3 * 60000; // 5 minutes</span>
+<span class="fc" id="L45">    static int jsonIndentFactor = -1;</span>
 
     Boolean followRedirects;
     String baseUri;
@@ -50,14 +51,14 @@ public class Webb {
     HostnameVerifier hostnameVerifier;
     RetryManager retryManager;
 
-<span class="fc" id="L53">    protected Webb() {}</span>
+<span class="fc" id="L54">    protected Webb() {}</span>
 
     /**
      * Create an instance which can be reused for multiple requests in the same Thread.
      * @return the created instance.
      */
     public static Webb create() {
-<span class="fc" id="L60">        return new Webb();</span>
+<span class="fc" id="L61">        return new Webb();</span>
     }
 
     /**
@@ -75,12 +76,12 @@ public class Webb {
      * @see com.goebl.david.Request#header(String, Object)
      */
     public static void setGlobalHeader(String name, Object value) {
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (value != null) {</span>
-<span class="fc" id="L79">            globalHeaders.put(name, value);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (value != null) {</span>
+<span class="fc" id="L80">            globalHeaders.put(name, value);</span>
         } else {
-<span class="nc" id="L81">            globalHeaders.remove(name);</span>
+<span class="nc" id="L82">            globalHeaders.remove(name);</span>
         }
-<span class="fc" id="L83">    }</span>
+<span class="fc" id="L84">    }</span>
 
     /**
      * Set the base URI for all requests starting in this JVM from now.
@@ -93,8 +94,8 @@ public class Webb {
      * @see #setBaseUri(String)
      */
     public static void setGlobalBaseUri(String globalBaseUri) {
-<span class="nc" id="L96">        Webb.globalBaseUri = globalBaseUri;</span>
-<span class="nc" id="L97">    }</span>
+<span class="nc" id="L97">        Webb.globalBaseUri = globalBaseUri;</span>
+<span class="nc" id="L98">    }</span>
 
     /**
      * The number of characters to indent child properties, &lt;code&gt;-1&lt;/code&gt; for &quot;productive&quot; code.
@@ -103,8 +104,8 @@ public class Webb {
      * @param indentFactor the number of spaces to indent
      */
     public static void setJsonIndentFactor(int indentFactor) {
-<span class="nc" id="L106">        Webb.jsonIndentFactor = indentFactor;</span>
-<span class="nc" id="L107">    }</span>
+<span class="nc" id="L107">        Webb.jsonIndentFactor = indentFactor;</span>
+<span class="nc" id="L108">    }</span>
 
     /**
      * Set the timeout in milliseconds for connecting the server.
@@ -115,8 +116,8 @@ public class Webb {
      * @param globalConnectTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
      */
     public static void setConnectTimeout(int globalConnectTimeout) {
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        connectTimeout = globalConnectTimeout &gt; 0 ? globalConnectTimeout : null;</span>
-<span class="fc" id="L119">    }</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        connectTimeout = globalConnectTimeout &gt; 0 ? globalConnectTimeout : null;</span>
+<span class="fc" id="L120">    }</span>
 
     /**
      * Set the timeout in milliseconds for getting response from the server.
@@ -127,8 +128,8 @@ public class Webb {
      * @param globalReadTimeout the new timeout or &lt;code&gt;&amp;lt;= 0&lt;/code&gt; to use HttpURLConnection default timeout.
      */
     public static void setReadTimeout(int globalReadTimeout) {
-<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        readTimeout = globalReadTimeout &gt; 0 ? globalReadTimeout : null;</span>
-<span class="fc" id="L131">    }</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        readTimeout = globalReadTimeout &gt; 0 ? globalReadTimeout : null;</span>
+<span class="fc" id="L132">    }</span>
 
     /**
      * See &lt;a href=&quot;http://docs.oracle.com/javase/7/docs/api/java/net/HttpURLConnection.html#setInstanceFollowRedirects(boolean)&quot;&gt;
@@ -140,24 +141,24 @@ public class Webb {
      *             Default value comes from HttpURLConnection and should be &lt;code&gt;true&lt;/code&gt;.
      */
     public void setFollowRedirects(boolean auto) {
-<span class="fc" id="L143">        this.followRedirects = auto;</span>
-<span class="fc" id="L144">    }</span>
+<span class="fc" id="L144">        this.followRedirects = auto;</span>
+<span class="fc" id="L145">    }</span>
 
     /**
      * Set a custom {@link javax.net.ssl.SSLSocketFactory}, most likely to relax Certification checking.
      * @param sslSocketFactory the factory to use (see test cases for an example).
      */
     public void setSSLSocketFactory(SSLSocketFactory sslSocketFactory) {
-<span class="fc" id="L151">        this.sslSocketFactory = sslSocketFactory;</span>
-<span class="fc" id="L152">    }</span>
+<span class="fc" id="L152">        this.sslSocketFactory = sslSocketFactory;</span>
+<span class="fc" id="L153">    }</span>
 
     /**
      * Set a custom {@link javax.net.ssl.HostnameVerifier}, most likely to relax host-name checking.
      * @param hostnameVerifier the verifier (see test cases for an example).
      */
     public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
-<span class="fc" id="L159">        this.hostnameVerifier = hostnameVerifier;</span>
-<span class="fc" id="L160">    }</span>
+<span class="fc" id="L160">        this.hostnameVerifier = hostnameVerifier;</span>
+<span class="fc" id="L161">    }</span>
 
     /**
      * Set the base URI for all requests created from this instance.
@@ -169,8 +170,8 @@ public class Webb {
      * @see #setGlobalBaseUri(String)
      */
     public void setBaseUri(String baseUri) {
-<span class="fc" id="L172">        this.baseUri = baseUri;</span>
-<span class="fc" id="L173">    }</span>
+<span class="fc" id="L173">        this.baseUri = baseUri;</span>
+<span class="fc" id="L174">    }</span>
 
     /**
      * Returns the base URI of this instance.
@@ -178,7 +179,7 @@ public class Webb {
      * @return base URI
      */
     public String getBaseUri() {
-<span class="nc" id="L181">        return baseUri;</span>
+<span class="nc" id="L182">        return baseUri;</span>
     }
 
     /**
@@ -197,23 +198,23 @@ public class Webb {
      * @see com.goebl.david.Request#header(String, Object)
      */
     public void setDefaultHeader(String name, Object value) {
-<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (defaultHeaders == null) {</span>
-<span class="nc" id="L201">            defaultHeaders = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (defaultHeaders == null) {</span>
+<span class="nc" id="L202">            defaultHeaders = new HashMap&lt;String, Object&gt;();</span>
         }
-<span class="nc bnc" id="L203" title="All 2 branches missed.">        if (value == null) {</span>
-<span class="nc" id="L204">            defaultHeaders.remove(name);</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (value == null) {</span>
+<span class="nc" id="L205">            defaultHeaders.remove(name);</span>
         } else {
-<span class="nc" id="L206">            defaultHeaders.put(name, value);</span>
+<span class="nc" id="L207">            defaultHeaders.put(name, value);</span>
         }
-<span class="nc" id="L208">    }</span>
+<span class="nc" id="L209">    }</span>
 
     /**
      * Registers an alternative {@link com.goebl.david.RetryManager}.
      * @param retryManager the new manager for deciding whether it makes sense to retry a request.
      */
     public void setRetryManager(RetryManager retryManager) {
-<span class="nc" id="L215">        this.retryManager = retryManager;</span>
-<span class="nc" id="L216">    }</span>
+<span class="nc" id="L216">        this.retryManager = retryManager;</span>
+<span class="nc" id="L217">    }</span>
 
     /**
      * Creates a &lt;b&gt;GET HTTP&lt;/b&gt; request with the specified absolute or relative URI.
@@ -222,7 +223,7 @@ public class Webb {
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request get(String pathOrUri) {
-<span class="fc" id="L225">        return new Request(this, Request.Method.GET, buildPath(pathOrUri));</span>
+<span class="fc" id="L226">        return new Request(this, Request.Method.GET, buildPath(pathOrUri));</span>
     }
 
     /**
@@ -232,7 +233,7 @@ public class Webb {
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request post(String pathOrUri) {
-<span class="fc" id="L235">        return new Request(this, Request.Method.POST, buildPath(pathOrUri));</span>
+<span class="fc" id="L236">        return new Request(this, Request.Method.POST, buildPath(pathOrUri));</span>
     }
 
     /**
@@ -242,7 +243,7 @@ public class Webb {
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request put(String pathOrUri) {
-<span class="fc" id="L245">        return new Request(this, Request.Method.PUT, buildPath(pathOrUri));</span>
+<span class="fc" id="L246">        return new Request(this, Request.Method.PUT, buildPath(pathOrUri));</span>
     }
 
     /**
@@ -252,153 +253,161 @@ public class Webb {
      * @return the created Request object (in fact it's more a builder than a real request object)
      */
     public Request delete(String pathOrUri) {
-<span class="fc" id="L255">        return new Request(this, Request.Method.DELETE, buildPath(pathOrUri));</span>
+<span class="fc" id="L256">        return new Request(this, Request.Method.DELETE, buildPath(pathOrUri));</span>
     }
 
     private String buildPath(String pathOrUri) {
-<span class="fc bfc" id="L259" title="All 2 branches covered.">        if (pathOrUri == null) {</span>
-<span class="fc" id="L260">            throw new IllegalArgumentException(&quot;pathOrUri must not be null&quot;);</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">        if (pathOrUri == null) {</span>
+<span class="fc" id="L261">            throw new IllegalArgumentException(&quot;pathOrUri must not be null&quot;);</span>
         }
-<span class="fc bfc" id="L262" title="All 4 branches covered.">        if (pathOrUri.startsWith(&quot;http://&quot;) || pathOrUri.startsWith(&quot;https://&quot;)) {</span>
-<span class="fc" id="L263">            return pathOrUri;</span>
+<span class="fc bfc" id="L263" title="All 4 branches covered.">        if (pathOrUri.startsWith(&quot;http://&quot;) || pathOrUri.startsWith(&quot;https://&quot;)) {</span>
+<span class="fc" id="L264">            return pathOrUri;</span>
         }
-<span class="pc bpc" id="L265" title="1 of 2 branches missed.">        String myBaseUri = baseUri != null ? baseUri : globalBaseUri;</span>
-<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        return myBaseUri == null ? pathOrUri : myBaseUri + pathOrUri;</span>
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">        String myBaseUri = baseUri != null ? baseUri : globalBaseUri;</span>
+<span class="pc bpc" id="L267" title="1 of 2 branches missed.">        return myBaseUri == null ? pathOrUri : myBaseUri + pathOrUri;</span>
     }
 
     &lt;T&gt; Response&lt;T&gt; execute(Request request, Class&lt;T&gt; clazz) {
-<span class="fc" id="L270">        Response&lt;T&gt; response = null;</span>
+<span class="fc" id="L271">        Response&lt;T&gt; response = null;</span>
 
-<span class="fc bfc" id="L272" title="All 2 branches covered.">        if (request.retryCount == 0) {</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">        if (request.retryCount == 0) {</span>
             // no retry -&gt; just delegate to inner method
-<span class="fc" id="L274">            response = _execute(request, clazz);</span>
+<span class="fc" id="L275">            response = _execute(request, clazz);</span>
         } else {
-<span class="pc bpc" id="L276" title="1 of 2 branches missed.">            if (retryManager == null) {</span>
-<span class="fc" id="L277">                retryManager = RetryManager.DEFAULT;</span>
+<span class="pc bpc" id="L277" title="1 of 2 branches missed.">            if (retryManager == null) {</span>
+<span class="fc" id="L278">                retryManager = RetryManager.DEFAULT;</span>
             }
-<span class="pc bpc" id="L279" title="1 of 2 branches missed.">            for (int tries = 0; tries &lt;= request.retryCount; ++tries) {</span>
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">            for (int tries = 0; tries &lt;= request.retryCount; ++tries) {</span>
                 try {
-<span class="fc" id="L281">                    response = _execute(request, clazz);</span>
-<span class="fc bfc" id="L282" title="All 4 branches covered.">                    if (tries &gt;= request.retryCount || !retryManager.isRetryUseful(response)) {</span>
-<span class="fc" id="L283">                        break;</span>
+<span class="fc" id="L282">                    response = _execute(request, clazz);</span>
+<span class="fc bfc" id="L283" title="All 4 branches covered.">                    if (tries &gt;= request.retryCount || !retryManager.isRetryUseful(response)) {</span>
+<span class="fc" id="L284">                        break;</span>
                     }
-<span class="fc" id="L285">                } catch (WebbException we) {</span>
+<span class="nc" id="L286">                } catch (WebbException we) {</span>
                     // analyze: is exception recoverable?
-<span class="pc bpc" id="L287" title="2 of 4 branches missed.">                    if (tries &gt;= request.retryCount || !retryManager.isRecoverable(we)) {</span>
-<span class="fc" id="L288">                        throw we;</span>
+<span class="nc bnc" id="L288" title="All 4 branches missed.">                    if (tries &gt;= request.retryCount || !retryManager.isRecoverable(we)) {</span>
+<span class="nc" id="L289">                        throw we;</span>
                     }
-<span class="fc" id="L290">                }</span>
-<span class="pc bpc" id="L291" title="1 of 2 branches missed.">                if (request.waitExponential) {</span>
-<span class="fc" id="L292">                    retryManager.wait(tries);</span>
+<span class="fc" id="L291">                }</span>
+<span class="pc bpc" id="L292" title="1 of 2 branches missed.">                if (request.waitExponential) {</span>
+<span class="fc" id="L293">                    retryManager.wait(tries);</span>
                 }
             }
         }
-<span class="pc bpc" id="L296" title="1 of 2 branches missed.">        if (response == null) {</span>
-<span class="nc" id="L297">            throw new IllegalStateException(); // should never reach this line</span>
+<span class="pc bpc" id="L297" title="1 of 2 branches missed.">        if (response == null) {</span>
+<span class="nc" id="L298">            throw new IllegalStateException(); // should never reach this line</span>
         }
-<span class="fc bfc" id="L299" title="All 2 branches covered.">        if (request.ensureSuccess) {</span>
-<span class="fc" id="L300">            response.ensureSuccess();</span>
+<span class="fc bfc" id="L300" title="All 2 branches covered.">        if (request.ensureSuccess) {</span>
+<span class="fc" id="L301">            response.ensureSuccess();</span>
         }
 
-<span class="fc" id="L303">        return response;</span>
+<span class="fc" id="L304">        return response;</span>
     }
 
     private &lt;T&gt; Response&lt;T&gt; _execute(Request request, Class&lt;T&gt; clazz) {
-<span class="fc" id="L307">        Response&lt;T&gt; response = new Response&lt;T&gt;(request);</span>
+<span class="fc" id="L308">        Response&lt;T&gt; response = new Response&lt;T&gt;(request);</span>
 
-<span class="fc" id="L309">        InputStream is = null;</span>
-<span class="fc" id="L310">        HttpURLConnection connection = null;</span>
+<span class="fc" id="L310">        InputStream is = null;</span>
+<span class="fc" id="L311">        boolean closeStream = true;</span>
+<span class="fc" id="L312">        HttpURLConnection connection = null;</span>
 
         try {
-<span class="fc" id="L313">            String uri = request.uri;</span>
-<span class="fc bfc" id="L314" title="All 2 branches covered.">            if (request.method == Request.Method.GET &amp;&amp;</span>
-<span class="fc bfc" id="L315" title="All 4 branches covered.">                    !uri.contains(&quot;?&quot;) &amp;&amp;</span>
+<span class="fc" id="L315">            String uri = request.uri;</span>
+<span class="fc bfc" id="L316" title="All 2 branches covered.">            if (request.method == Request.Method.GET &amp;&amp;</span>
+<span class="fc bfc" id="L317" title="All 4 branches covered.">                    !uri.contains(&quot;?&quot;) &amp;&amp;</span>
                     request.params != null &amp;&amp;
-<span class="pc bpc" id="L317" title="1 of 2 branches missed.">                    !request.params.isEmpty()) {</span>
-<span class="fc" id="L318">                uri += &quot;?&quot; + WebbUtils.queryString(request.params);</span>
+<span class="pc bpc" id="L319" title="1 of 2 branches missed.">                    !request.params.isEmpty()) {</span>
+<span class="fc" id="L320">                uri += &quot;?&quot; + WebbUtils.queryString(request.params);</span>
             }
-<span class="fc" id="L320">            URL apiUrl = new URL(uri);</span>
-<span class="fc" id="L321">            connection = (HttpURLConnection) apiUrl.openConnection();</span>
+<span class="fc" id="L322">            URL apiUrl = new URL(uri);</span>
+<span class="fc" id="L323">            connection = (HttpURLConnection) apiUrl.openConnection();</span>
 
-<span class="fc" id="L323">            prepareSslConnection(connection);</span>
-<span class="fc" id="L324">            connection.setRequestMethod(request.method.name());</span>
-<span class="fc bfc" id="L325" title="All 2 branches covered.">            if (request.followRedirects != null) {</span>
-<span class="fc" id="L326">                connection.setInstanceFollowRedirects(request.followRedirects);</span>
+<span class="fc" id="L325">            prepareSslConnection(connection);</span>
+<span class="fc" id="L326">            connection.setRequestMethod(request.method.name());</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">            if (request.followRedirects != null) {</span>
+<span class="fc" id="L328">                connection.setInstanceFollowRedirects(request.followRedirects);</span>
             }
-<span class="fc" id="L328">            connection.setUseCaches(request.useCaches);</span>
-<span class="fc" id="L329">            setTimeouts(request, connection);</span>
-<span class="fc bfc" id="L330" title="All 2 branches covered.">            if (request.ifModifiedSince != null) {</span>
-<span class="fc" id="L331">                connection.setIfModifiedSince(request.ifModifiedSince);</span>
-            }
-
-<span class="fc" id="L334">            WebbUtils.addRequestProperties(connection, mergeHeaders(request.headers));</span>
-<span class="fc bfc" id="L335" title="All 4 branches covered.">            if (clazz == JSONObject.class || clazz == JSONArray.class) {</span>
-<span class="fc" id="L336">                WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);</span>
+<span class="fc" id="L330">            connection.setUseCaches(request.useCaches);</span>
+<span class="fc" id="L331">            setTimeouts(request, connection);</span>
+<span class="fc bfc" id="L332" title="All 2 branches covered.">            if (request.ifModifiedSince != null) {</span>
+<span class="fc" id="L333">                connection.setIfModifiedSince(request.ifModifiedSince);</span>
             }
 
-<span class="fc bfc" id="L339" title="All 4 branches covered.">            if (request.method != Request.Method.GET &amp;&amp; request.method != Request.Method.DELETE) {</span>
-<span class="fc bfc" id="L340" title="All 2 branches covered.">                if (request.streamPayload) {</span>
-<span class="fc" id="L341">                    WebbUtils.setContentTypeAndLengthForStreaming(connection, request, request.compress);</span>
-<span class="fc" id="L342">                    connection.setDoOutput(true);</span>
-<span class="fc" id="L343">                    streamBody(connection, request.payload, request.compress);</span>
+<span class="fc" id="L336">            WebbUtils.addRequestProperties(connection, mergeHeaders(request.headers));</span>
+<span class="fc bfc" id="L337" title="All 4 branches covered.">            if (clazz == JSONObject.class || clazz == JSONArray.class) {</span>
+<span class="fc" id="L338">                WebbUtils.ensureRequestProperty(connection, HDR_ACCEPT, APP_JSON);</span>
+            }
+
+<span class="fc bfc" id="L341" title="All 4 branches covered.">            if (request.method != Request.Method.GET &amp;&amp; request.method != Request.Method.DELETE) {</span>
+<span class="fc bfc" id="L342" title="All 2 branches covered.">                if (request.streamPayload) {</span>
+<span class="fc" id="L343">                    WebbUtils.setContentTypeAndLengthForStreaming(connection, request, request.compress);</span>
+<span class="fc" id="L344">                    connection.setDoOutput(true);</span>
+<span class="fc" id="L345">                    streamBody(connection, request.payload, request.compress);</span>
                 } else {
-<span class="fc" id="L345">                    byte[] requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(</span>
+<span class="fc" id="L347">                    byte[] requestBody = WebbUtils.getPayloadAsBytesAndSetContentType(</span>
                             connection, request, request.compress, jsonIndentFactor);
 
-<span class="pc bpc" id="L348" title="1 of 2 branches missed.">                    if (requestBody != null) {</span>
-<span class="fc" id="L349">                        connection.setDoOutput(true);</span>
-<span class="fc" id="L350">                        writeBody(connection, requestBody);</span>
+<span class="pc bpc" id="L350" title="1 of 2 branches missed.">                    if (requestBody != null) {</span>
+<span class="fc" id="L351">                        connection.setDoOutput(true);</span>
+<span class="fc" id="L352">                        writeBody(connection, requestBody);</span>
                     }
-<span class="fc" id="L352">                }</span>
+<span class="fc" id="L354">                }</span>
             } else {
-<span class="fc" id="L354">                connection.connect();</span>
+<span class="fc" id="L356">                connection.connect();</span>
             }
 
-<span class="fc" id="L357">            response.connection = connection;</span>
-<span class="fc" id="L358">            response.statusCode = connection.getResponseCode();</span>
-<span class="fc" id="L359">            response.responseMessage = connection.getResponseMessage();</span>
+<span class="fc" id="L359">            response.connection = connection;</span>
+<span class="fc" id="L360">            response.statusCode = connection.getResponseCode();</span>
+<span class="fc" id="L361">            response.responseMessage = connection.getResponseMessage();</span>
 
             // get the response body (if any)
-<span class="fc bfc" id="L362" title="All 2 branches covered.">            is = response.isSuccess() ? connection.getInputStream() : connection.getErrorStream();</span>
-<span class="fc" id="L363">            is = WebbUtils.wrapStream(connection.getContentEncoding(), is);</span>
-<span class="fc" id="L364">            byte[] responseBody = WebbUtils.readBytes(is);</span>
+<span class="fc bfc" id="L364" title="All 2 branches covered.">            is = response.isSuccess() ? connection.getInputStream() : connection.getErrorStream();</span>
+<span class="fc" id="L365">            is = WebbUtils.wrapStream(connection.getContentEncoding(), is);</span>
 
-<span class="fc bfc" id="L366" title="All 2 branches covered.">            if (response.isSuccess()) {</span>
-<span class="fc" id="L367">                WebbUtils.parseResponseBody(clazz, response, responseBody);</span>
+<span class="fc bfc" id="L367" title="All 2 branches covered.">            if (clazz == InputStream.class) {</span>
+<span class="fc" id="L368">                is = new AutoDisconnectInputStream(connection, is);</span>
+            }
+<span class="fc bfc" id="L370" title="All 2 branches covered.">            if (response.isSuccess()) {</span>
+<span class="fc" id="L371">                WebbUtils.parseResponseBody(clazz, response, is);</span>
             } else {
-<span class="fc" id="L369">                WebbUtils.parseErrorResponse(clazz, response, responseBody);</span>
+<span class="fc" id="L373">                WebbUtils.parseErrorResponse(clazz, response, is);</span>
+            }
+<span class="fc bfc" id="L375" title="All 2 branches covered.">            if (clazz == InputStream.class) {</span>
+<span class="fc" id="L376">                closeStream = false;</span>
             }
 
-<span class="fc" id="L372">            return response;</span>
+<span class="fc" id="L379">            return response;</span>
 
-<span class="fc" id="L374">        } catch (WebbException e) {</span>
+<span class="fc" id="L381">        } catch (WebbException e) {</span>
 
-<span class="fc" id="L376">            throw e;</span>
+<span class="fc" id="L383">            throw e;</span>
 
-<span class="fc" id="L378">        } catch (Exception e) {</span>
+<span class="fc" id="L385">        } catch (Exception e) {</span>
 
-<span class="fc" id="L380">            throw new WebbException(e);</span>
+<span class="fc" id="L387">            throw new WebbException(e);</span>
 
         } finally {
-<span class="fc bfc" id="L383" title="All 4 branches covered.">            if (is != null) {</span>
-<span class="pc" id="L384">                try { is.close(); } catch (Exception ignored) {}</span>
-            }
-<span class="pc bpc" id="L386" title="2 of 4 branches missed.">            if (connection != null) {</span>
-<span class="pc" id="L387">                try { connection.disconnect(); } catch (Exception ignored) {}</span>
+<span class="pc bpc" id="L390" title="1 of 4 branches missed.">            if (closeStream) {</span>
+<span class="fc bfc" id="L391" title="All 4 branches covered.">                if (is != null) {</span>
+<span class="pc" id="L392">                    try { is.close(); } catch (Exception ignored) {}</span>
+                }
+<span class="pc bpc" id="L394" title="2 of 4 branches missed.">                if (connection != null) {</span>
+<span class="pc" id="L395">                    try { connection.disconnect(); } catch (Exception ignored) {}</span>
+                }
             }
         }
     }
 
     private void setTimeouts(Request request, HttpURLConnection connection) {
-<span class="pc bpc" id="L393" title="1 of 4 branches missed.">        if (request.connectTimeout != null || connectTimeout != null) {</span>
-<span class="fc bfc" id="L394" title="All 2 branches covered.">            connection.setConnectTimeout(</span>
-<span class="fc" id="L395">                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);</span>
+<span class="pc bpc" id="L402" title="1 of 4 branches missed.">        if (request.connectTimeout != null || connectTimeout != null) {</span>
+<span class="fc bfc" id="L403" title="All 2 branches covered.">            connection.setConnectTimeout(</span>
+<span class="fc" id="L404">                    request.connectTimeout != null ? request.connectTimeout : connectTimeout);</span>
         }
-<span class="pc bpc" id="L397" title="1 of 4 branches missed.">        if (request.readTimeout != null || readTimeout != null) {</span>
-<span class="fc bfc" id="L398" title="All 2 branches covered.">            connection.setReadTimeout(</span>
-<span class="fc" id="L399">                    request.readTimeout != null ? request.readTimeout : readTimeout);</span>
+<span class="pc bpc" id="L406" title="1 of 4 branches missed.">        if (request.readTimeout != null || readTimeout != null) {</span>
+<span class="fc bfc" id="L407" title="All 2 branches covered.">            connection.setReadTimeout(</span>
+<span class="fc" id="L408">                    request.readTimeout != null ? request.readTimeout : readTimeout);</span>
         }
-<span class="fc" id="L401">    }</span>
+<span class="fc" id="L410">    }</span>
 
     private void writeBody(HttpURLConnection connection, byte[] body) throws IOException {
         // Android StrictMode might complain about not closing the connection:
@@ -407,83 +416,116 @@ public class Webb {
         // happen e.g. on 4.4.2/Moto G.
         // Closing the stream in the try block might help sometimes (it's intermittently),
         // but I don't want to deal with the IOException which can be thrown in close().
-<span class="fc" id="L410">        OutputStream os = null;</span>
+<span class="fc" id="L419">        OutputStream os = null;</span>
         try {
-<span class="fc" id="L412">            os = connection.getOutputStream();</span>
-<span class="fc" id="L413">            os.write(body);</span>
-<span class="fc" id="L414">            os.flush();</span>
+<span class="fc" id="L421">            os = connection.getOutputStream();</span>
+<span class="fc" id="L422">            os.write(body);</span>
+<span class="fc" id="L423">            os.flush();</span>
         } finally {
-<span class="pc bpc" id="L416" title="2 of 4 branches missed.">            if (os != null) {</span>
-<span class="pc" id="L417">                try { os.close(); } catch (Exception ignored) {}</span>
+<span class="pc bpc" id="L425" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc" id="L426">                try { os.close(); } catch (Exception ignored) {}</span>
             }
         }
-<span class="fc" id="L420">    }</span>
+<span class="fc" id="L429">    }</span>
 
     private void streamBody(HttpURLConnection connection, Object body, boolean compress) throws IOException {
         InputStream is;
         boolean closeStream;
 
-<span class="fc bfc" id="L426" title="All 2 branches covered.">        if (body instanceof File) {</span>
-<span class="fc" id="L427">            is = new FileInputStream((File) body);</span>
-<span class="fc" id="L428">            closeStream = true;</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">        if (body instanceof File) {</span>
+<span class="fc" id="L436">            is = new FileInputStream((File) body);</span>
+<span class="fc" id="L437">            closeStream = true;</span>
         } else {
-<span class="fc" id="L430">            is = (InputStream) body;</span>
-<span class="fc" id="L431">            closeStream = false;</span>
+<span class="fc" id="L439">            is = (InputStream) body;</span>
+<span class="fc" id="L440">            closeStream = false;</span>
         }
 
         // &quot;E/StrictMode﹕ A resource was acquired at attached stack trace but never released&quot;
         // see comments about this problem in #writeBody()
-<span class="fc" id="L436">        OutputStream os = null;</span>
+<span class="fc" id="L445">        OutputStream os = null;</span>
         try {
-<span class="fc" id="L438">            os = connection.getOutputStream();</span>
-<span class="fc bfc" id="L439" title="All 2 branches covered.">            if (compress) {</span>
-<span class="fc" id="L440">                os = new GZIPOutputStream(os);</span>
+<span class="fc" id="L447">            os = connection.getOutputStream();</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">            if (compress) {</span>
+<span class="fc" id="L449">                os = new GZIPOutputStream(os);</span>
             }
-<span class="fc" id="L442">            WebbUtils.copyStream(is, os);</span>
-<span class="fc" id="L443">            os.flush();</span>
+<span class="fc" id="L451">            WebbUtils.copyStream(is, os);</span>
+<span class="fc" id="L452">            os.flush();</span>
         } finally {
-<span class="pc bpc" id="L445" title="2 of 4 branches missed.">            if (os != null) {</span>
-<span class="pc" id="L446">                try { os.close(); } catch (Exception ignored) {}</span>
+<span class="pc bpc" id="L454" title="3 of 4 branches missed.">            if (os != null) {</span>
+<span class="pc" id="L455">                try { os.close(); } catch (Exception ignored) {}</span>
             }
-<span class="pc bpc" id="L448" title="2 of 8 branches missed.">            if (is != null &amp;&amp; closeStream) {</span>
-<span class="pc" id="L449">                try { is.close(); } catch (Exception ignored) {}</span>
+<span class="pc bpc" id="L457" title="5 of 8 branches missed.">            if (is != null &amp;&amp; closeStream) {</span>
+<span class="pc" id="L458">                try { is.close(); } catch (Exception ignored) {}</span>
             }
         }
-<span class="fc" id="L452">    }</span>
+<span class="fc" id="L461">    }</span>
 
     private void prepareSslConnection(HttpURLConnection connection) {
-<span class="pc bpc" id="L455" title="2 of 6 branches missed.">        if ((hostnameVerifier != null || sslSocketFactory != null) &amp;&amp; connection instanceof HttpsURLConnection) {</span>
-<span class="fc" id="L456">            HttpsURLConnection sslConnection = (HttpsURLConnection) connection;</span>
-<span class="pc bpc" id="L457" title="1 of 2 branches missed.">            if (hostnameVerifier != null) {</span>
-<span class="fc" id="L458">                sslConnection.setHostnameVerifier(hostnameVerifier);</span>
+<span class="pc bpc" id="L464" title="2 of 6 branches missed.">        if ((hostnameVerifier != null || sslSocketFactory != null) &amp;&amp; connection instanceof HttpsURLConnection) {</span>
+<span class="fc" id="L465">            HttpsURLConnection sslConnection = (HttpsURLConnection) connection;</span>
+<span class="pc bpc" id="L466" title="1 of 2 branches missed.">            if (hostnameVerifier != null) {</span>
+<span class="fc" id="L467">                sslConnection.setHostnameVerifier(hostnameVerifier);</span>
             }
-<span class="pc bpc" id="L460" title="1 of 2 branches missed.">            if (sslSocketFactory != null) {</span>
-<span class="fc" id="L461">                sslConnection.setSSLSocketFactory(sslSocketFactory);</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">            if (sslSocketFactory != null) {</span>
+<span class="fc" id="L470">                sslConnection.setSSLSocketFactory(sslSocketFactory);</span>
             }
         }
-<span class="fc" id="L464">    }</span>
+<span class="fc" id="L473">    }</span>
 
     Map&lt;String, Object&gt; mergeHeaders(Map&lt;String, Object&gt; requestHeaders) {
-<span class="fc" id="L467">        Map&lt;String, Object&gt; headers = null;</span>
-<span class="pc bpc" id="L468" title="1 of 2 branches missed.">        if (!globalHeaders.isEmpty()) {</span>
-<span class="fc" id="L469">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
-<span class="fc" id="L470">            headers.putAll(globalHeaders);</span>
+<span class="fc" id="L476">        Map&lt;String, Object&gt; headers = null;</span>
+<span class="pc bpc" id="L477" title="1 of 2 branches missed.">        if (!globalHeaders.isEmpty()) {</span>
+<span class="fc" id="L478">            headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="fc" id="L479">            headers.putAll(globalHeaders);</span>
         }
-<span class="pc bpc" id="L472" title="1 of 2 branches missed.">        if (defaultHeaders != null) {</span>
-<span class="nc bnc" id="L473" title="All 2 branches missed.">            if (headers == null) {</span>
-<span class="nc" id="L474">                headers = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="pc bpc" id="L481" title="1 of 2 branches missed.">        if (defaultHeaders != null) {</span>
+<span class="nc bnc" id="L482" title="All 2 branches missed.">            if (headers == null) {</span>
+<span class="nc" id="L483">                headers = new LinkedHashMap&lt;String, Object&gt;();</span>
             }
-<span class="nc" id="L476">            headers.putAll(defaultHeaders);</span>
+<span class="nc" id="L485">            headers.putAll(defaultHeaders);</span>
         }
-<span class="fc bfc" id="L478" title="All 2 branches covered.">        if (requestHeaders != null) {</span>
-<span class="pc bpc" id="L479" title="1 of 2 branches missed.">            if (headers == null) {</span>
-<span class="nc" id="L480">                headers = requestHeaders;</span>
+<span class="fc bfc" id="L487" title="All 2 branches covered.">        if (requestHeaders != null) {</span>
+<span class="pc bpc" id="L488" title="1 of 2 branches missed.">            if (headers == null) {</span>
+<span class="nc" id="L489">                headers = requestHeaders;</span>
             } else {
-<span class="fc" id="L482">                headers.putAll(requestHeaders);</span>
+<span class="fc" id="L491">                headers.putAll(requestHeaders);</span>
             }
         }
-<span class="fc" id="L485">        return headers;</span>
+<span class="fc" id="L494">        return headers;</span>
     }
 
+    /**
+     * Disconnect the underlying &lt;code&gt;HttpURLConnection&lt;/code&gt; on close.
+     */
+    private static class AutoDisconnectInputStream extends FilterInputStream {
+
+        /**
+         * The underlying &lt;code&gt;HttpURLConnection&lt;/code&gt;.
+         */
+        private final HttpURLConnection connection;
+
+        /**
+         * Creates an &lt;code&gt;AutoDisconnectInputStream&lt;/code&gt;
+         * by assigning the  argument &lt;code&gt;in&lt;/code&gt;
+         * to the field &lt;code&gt;this.in&lt;/code&gt; so as
+         * to remember it for later use.
+         * @param connection the underlying connection to disconnect on close.
+         * @param in the underlying input stream, or &lt;code&gt;null&lt;/code&gt; if
+         * this instance is to be created without an underlying stream.
+         */
+        protected AutoDisconnectInputStream(final HttpURLConnection connection, final InputStream in) {
+<span class="fc" id="L517">            super(in);</span>
+<span class="fc" id="L518">            this.connection = connection;</span>
+<span class="fc" id="L519">        }</span>
+
+        @Override
+        public void close() throws IOException {
+            try {
+<span class="fc" id="L524">                super.close();</span>
+            } finally {
+<span class="pc" id="L526">                connection.disconnect();</span>
+<span class="fc" id="L527">            }</span>
+<span class="fc" id="L528">        }</span>
+    }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.0.201403182114</span></div></body></html>
