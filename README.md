@@ -36,9 +36,9 @@ lightweight (~18 KB jar) and super-easy to use.
   * supports HTTPS and enables relaxing SSL-handshake (self-signed certificates, hostname verification)
   * pass-through to "real" connection for special cases
   * option to retry the request in case of special errors (503, 504, 'connection reset by peer')
-  * multi-valued parameters (since 1.3.0-SNAPSHOT)
+  * multi-valued parameters (since 1.3.0)
   * use streams as input and output (automatically closing underlying HttpURLConnection when stream
-    is closed, since 1.3.0-SNAPSHOT)
+    is closed, since 1.3.0)
 
 ## Non-Features ##
 
@@ -181,13 +181,13 @@ Request<String> request = webb.post("/some-resource").header("Connection", "clos
 <dependency>
     <groupId>com.goebl</groupId>
     <artifactId>david-webb</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
 Gradle
 
-    'com.goebl:david-webb:1.2.0'
+    'com.goebl:david-webb:1.3.0'
 
 Not using Maven/Gradle? - Then you can download the plain JAR from following links directly:
 
