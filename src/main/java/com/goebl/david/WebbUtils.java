@@ -83,12 +83,9 @@ public class WebbUtils {
         String json;
         try {
             json = new String(bytes, Const.UTF8);
+            return new JSONObject(json);
         } catch (UnsupportedEncodingException e) {
             throw new WebbException(e);
-        }
-
-        try {
-            return new JSONObject(json);
         } catch (JSONException e) {
             throw new WebbException("payload is not a valid JSON object", e);
         }
@@ -104,12 +101,9 @@ public class WebbUtils {
         String json;
         try {
             json = new String(bytes, Const.UTF8);
+            return new JSONArray(json);
         } catch (UnsupportedEncodingException e) {
             throw new WebbException(e);
-        }
-
-        try {
-            return new JSONArray(json);
         } catch (JSONException e) {
             throw new WebbException("payload is not a valid JSON array", e);
         }
@@ -128,12 +122,9 @@ public class WebbUtils {
         if (is == null) {
             return null;
         }
-        byte[] responseBody;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         copyStream(is, baos);
-        baos.close();
-        responseBody = baos.toByteArray();
-        return responseBody;
+        return baos.toByteArray();
     }
 
     /**
@@ -325,13 +316,17 @@ public class WebbUtils {
         throw new WebbException("unsupported content-encoding: " + contentEncoding);
     }
 
-    static <T> void parseResponseBody(Class<T> clazz, Response<T> response, byte[] responseBody)
-            throws UnsupportedEncodingException {
+    static <T> void parseResponseBody(Class<T> clazz, Response<T> response, InputStream responseBodyStream)
+            throws UnsupportedEncodingException, IOException {
 
-        if (responseBody == null || clazz == Void.class) {
+        if (responseBodyStream == null || clazz == Void.class) {
+            return;
+        } else if (clazz == InputStream.class) {
+            response.setBody(responseBodyStream);
             return;
         }
 
+        byte[] responseBody = WebbUtils.readBytes(responseBodyStream);
         // we are ignoring headers describing the content type of the response, instead
         // try to force the content based on the type the client is expecting it (clazz)
         if (clazz == String.class) {
@@ -345,13 +340,17 @@ public class WebbUtils {
         }
     }
 
-    static <T> void parseErrorResponse(Class<T> clazz, Response<T> response, byte[] responseBody)
-            throws UnsupportedEncodingException {
+    static <T> void parseErrorResponse(Class<T> clazz, Response<T> response, InputStream responseBodyStream)
+            throws UnsupportedEncodingException, IOException {
 
-        if (responseBody == null) {
+        if (responseBodyStream == null) {
+            return;
+        } else if (clazz == InputStream.class) {
+            response.errorBody = responseBodyStream;
             return;
         }
 
+        byte[] responseBody = WebbUtils.readBytes(responseBodyStream);
         String contentType = response.connection.getContentType();
         if (contentType == null || contentType.startsWith(Const.APP_BINARY) || clazz == Const.BYTE_ARRAY_CLASS) {
             response.errorBody = responseBody;
@@ -378,5 +377,4 @@ public class WebbUtils {
         // last fallback - return error object as byte[]
         response.errorBody = responseBody;
     }
-
 }

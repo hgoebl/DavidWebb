@@ -1,5 +1,6 @@
 package com.goebl.david;
 
+import java.io.FilterInputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -307,6 +308,7 @@ public class Webb {
         Response<T> response = new Response<T>(request);
 
         InputStream is = null;
+        boolean closeStream = true;
         HttpURLConnection connection = null;
 
         try {
@@ -361,12 +363,17 @@ public class Webb {
             // get the response body (if any)
             is = response.isSuccess() ? connection.getInputStream() : connection.getErrorStream();
             is = WebbUtils.wrapStream(connection.getContentEncoding(), is);
-            byte[] responseBody = WebbUtils.readBytes(is);
 
+            if (clazz == InputStream.class) {
+                is = new AutoDisconnectInputStream(connection, is);
+            }
             if (response.isSuccess()) {
-                WebbUtils.parseResponseBody(clazz, response, responseBody);
+                WebbUtils.parseResponseBody(clazz, response, is);
             } else {
-                WebbUtils.parseErrorResponse(clazz, response, responseBody);
+                WebbUtils.parseErrorResponse(clazz, response, is);
+            }
+            if (clazz == InputStream.class) {
+                closeStream = false;
             }
 
             return response;
@@ -380,11 +387,13 @@ public class Webb {
             throw new WebbException(e);
 
         } finally {
-            if (is != null) {
-                try { is.close(); } catch (Exception ignored) {}
-            }
-            if (connection != null) {
-                try { connection.disconnect(); } catch (Exception ignored) {}
+            if (closeStream) {
+                if (is != null) {
+                    try { is.close(); } catch (Exception ignored) {}
+                }
+                if (connection != null) {
+                    try { connection.disconnect(); } catch (Exception ignored) {}
+                }
             }
         }
     }
@@ -485,4 +494,37 @@ public class Webb {
         return headers;
     }
 
+    /**
+     * Disconnect the underlying <code>HttpURLConnection</code> on close.
+     */
+    private static class AutoDisconnectInputStream extends FilterInputStream {
+
+        /**
+         * The underlying <code>HttpURLConnection</code>.
+         */
+        private final HttpURLConnection connection;
+
+        /**
+         * Creates an <code>AutoDisconnectInputStream</code>
+         * by assigning the  argument <code>in</code>
+         * to the field <code>this.in</code> so as
+         * to remember it for later use.
+         * @param connection the underlying connection to disconnect on close.
+         * @param in the underlying input stream, or <code>null</code> if
+         * this instance is to be created without an underlying stream.
+         */
+        protected AutoDisconnectInputStream(final HttpURLConnection connection, final InputStream in) {
+            super(in);
+            this.connection = connection;
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                super.close();
+            } finally {
+                connection.disconnect();
+            }
+        }
+    }
 }

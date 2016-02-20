@@ -1,9 +1,6 @@
 package com.goebl.david;
 
-import junit.framework.TestCase;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,7 +8,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import junit.framework.TestCase;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyObject;
 import static org.mockito.Mockito.anyString;
@@ -176,7 +175,8 @@ public class TestWebbUtils_Mock extends TestCase {
         // String
         Response response = mock(Response.class);
         String expected = "München 1 Maß 10 €";
-        byte[] payload = expected.getBytes("UTF-8");
+        byte[] payloadInBytes = expected.getBytes("UTF-8");
+        ByteArrayInputStream payload = new ByteArrayInputStream(payloadInBytes);
 
         WebbUtils.parseResponseBody(String.class, response, payload);
         verify(response).setBody(expected);
@@ -184,8 +184,9 @@ public class TestWebbUtils_Mock extends TestCase {
         // byte[]
         response = mock(Response.class);
 
+        payload.reset();
         WebbUtils.parseResponseBody(Const.BYTE_ARRAY_CLASS, response, payload);
-        verify(response).setBody(payload);
+        verify(response).setBody(payloadInBytes);
 
         // void
         response = mock(Response.class);
@@ -200,7 +201,8 @@ public class TestWebbUtils_Mock extends TestCase {
         response.connection = connection;
 
         String expected = "München 1 Maß 10 €";
-        byte[] payload = expected.getBytes("UTF-8");
+        byte[] payloadInBytes = expected.getBytes("UTF-8");
+        ByteArrayInputStream payload = new ByteArrayInputStream(payloadInBytes);
 
         // this call should not eat any of the getContentType() return values
         WebbUtils.parseErrorResponse(String.class, null, null); // without NPE it's OK!
@@ -216,24 +218,27 @@ public class TestWebbUtils_Mock extends TestCase {
         // (1) we expect a byte[] and Content-Type = app/bin => should be byte[]
         WebbUtils.parseErrorResponse(Const.BYTE_ARRAY_CLASS, response, payload);
         assertNotNull(response.errorBody);
-        assertArrayEquals(payload, (byte[]) response.errorBody);
+        assertArrayEquals(payloadInBytes, (byte[]) response.errorBody);
         response.errorBody = null;
 
+        payload.reset();
         // (2) we expect a byte[] and Content-Type is null => should be byte[]
         WebbUtils.parseErrorResponse(Const.BYTE_ARRAY_CLASS, response, payload);
         assertNotNull(response.errorBody);
-        assertArrayEquals(payload, (byte[]) response.errorBody);
+        assertArrayEquals(payloadInBytes, (byte[]) response.errorBody);
         response.errorBody = null;
 
+        payload.reset();
         // (3) we expect a String and Content-Type is JSON => should be String
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("msg", expected);
-        payload = jsonObject.toString().getBytes(Const.UTF8);
+        payload = new ByteArrayInputStream(jsonObject.toString().getBytes(Const.UTF8));
         WebbUtils.parseErrorResponse(String.class, response, payload);
         assertNotNull(response.errorBody);
         assertEquals(jsonObject.toString(), (String) response.errorBody);
         response.errorBody = null;
 
+        payload.reset();
         // (4) we expect JSON and Content-Type is JSON => should return JSON
         WebbUtils.parseErrorResponse(JSONObject.class, response, payload);
         assertNotNull(response.errorBody);
@@ -241,6 +246,7 @@ public class TestWebbUtils_Mock extends TestCase {
         assertEquals(jsonObject.toString(), ((JSONObject) response.errorBody).toString());
         response.errorBody = null;
 
+        payload.reset();
         // (5) we expect JSON and Content-Type is text => should return String
         WebbUtils.parseErrorResponse(JSONObject.class, response, payload);
         assertNotNull(response.errorBody);

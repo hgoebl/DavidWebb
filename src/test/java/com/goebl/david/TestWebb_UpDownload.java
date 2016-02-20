@@ -1,10 +1,11 @@
 package com.goebl.david;
 
-import org.json.JSONArray;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.Random;
-import java.util.zip.GZIPInputStream;
+import org.json.JSONArray;
 
 public class TestWebb_UpDownload extends AbstractTestWebb {
     private static File TEST_FILE;
@@ -185,5 +186,20 @@ public class TestWebb_UpDownload extends AbstractTestWebb {
                 .asBytes();
 
         assertArrayEquals(msg, response.getBody());
+    }
+
+    public void testEchoAsStream() throws Exception {
+        byte[] msg = (SIMPLE_ASCII + ", " + COMPLEX_UTF8).getBytes(Const.UTF8);
+        Response<InputStream> response = webb
+                .post("/echoBin")
+                .body(msg)
+                .asStream();
+        InputStream is = response.getBody();
+        try {
+            byte[] result = WebbUtils.readBytes(is);
+            assertArrayEquals(msg, result);
+        } finally {
+            is.close();
+        }
     }
 }

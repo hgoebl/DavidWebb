@@ -399,6 +399,14 @@ public class Request {
     }
 
     /**
+     * Execute the request and expect the result to be convertible to <code>InputStream</code>.
+     * @return the created <code>Response</code> object carrying the payload from the server as <code>InputStream</code>
+     */
+    public Response<InputStream> asStream() {
+        return webb.execute(this, InputStream.class);
+    }
+
+    /**
      * Execute the request and expect no result payload (only status-code and headers).
      * @return the created <code>Response</code> object where no payload is expected or simply will be ignored.
      */
