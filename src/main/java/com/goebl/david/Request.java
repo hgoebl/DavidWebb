@@ -158,7 +158,7 @@ public class Request {
     }
 
     /**
-     * Set (or overwrite) a HTTP header value.
+     * Set (or overwrite) an HTTP header value.
      * <br>
      * Setting a header this way has the highest precedence and overrides a header value set on a {@link Webb}
      * instance ({@link Webb#setDefaultHeader(String, Object)}) or a global header
