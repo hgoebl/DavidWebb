@@ -161,7 +161,34 @@ if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
     System.setProperty("http.keepAlive", "false");
 }
 ```
+## For Android < Lolipop
+**Solution for TLS1.0 not supported**
+[see SSL error #28](https://github.com/hgoebl/DavidWebb/issues/28)
 
+First, add dependency for Google Play Services in build file:
+```implementation 'com.google.android.gms:play-services:+'```
+
+Check the Tls version and call installIfNeededAsync(-,-) before calling Webservice:
+```
+private void checkTls() {
+    if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+        try {
+            ProviderInstaller.installIfNeededAsync(this, 
+            new ProviderInstaller.ProviderInstallListener() {
+                @Override
+                public void onProviderInstalled() {
+                }
+
+                @Override
+                public void onProviderInstallFailed(int i, Intent intent) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
 ## In Case Of Problems
 
 I've encountered some problems which could be solved by disabling **keep-alive** of HTTP connections.
